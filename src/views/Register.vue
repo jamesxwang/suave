@@ -2,7 +2,7 @@
 	<div class="page-register">
 		<div class="banner">
             <mt-swipe :auto="4000">
-                <mt-swipe-item v-for="item,i in sliders" :key="i"><img :src="item"></mt-swipe-item>
+                <mt-swipe-item v-for="(item,i) in sliders" :key="i"><img :src="item"></mt-swipe-item>
             </mt-swipe>
         </div>
         <h2>注册陪聊</h2>
@@ -10,32 +10,26 @@
             <div class="form-line">
                 <label class="label">真实姓名：</label>
                 <div class="flex-1">
-                	<input class="ipt full" type="text" v-model.trim="regForm.realName">
+                	<input class="ipt full" type="text" v-model.trim="regData.name">
                 </div>
             </div>   
             <div class="form-line">
                 <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
                 <div class="flex-1">
-                    <input class="ipt full" type="text" v-model.trim="regForm.nickName">
+                    <input class="ipt full" type="text" v-model.trim="regData.nickname">
                 </div>
             </div>
             <div class="form-line">
-                <label class="label">证件类型：</label>
-                <div class="flex-1">
-                	<div class="select">
-	                    <select v-model="regForm.type">
-	                        <option value="1">身份证</option>
-	                        <option value="2">护照</option>
-	                        <option value="3">驾驶证</option>
-	                    </select>
-	                </div>
+                <label class="label">身份证号：</label>
+                 <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="regData.identity">
                 </div>
             </div>
             <div class="form-line">
                 <label class="label">性 &nbsp; &nbsp; &nbsp; 别：</label>
                 <div class="flex-1">
                 	<div class="select">
-                		<select v-model="regForm.sex">
+                		<select v-model="regData.gender">
 	                        <option value="1">男</option>
 	                        <option value="2">女</option>
 	                    </select>
@@ -46,7 +40,7 @@
                 <label class="label">生 &nbsp; &nbsp; &nbsp; 日：</label>
                 <div class="flex-1" @click="showDatePicker">
                     <div class="ipt birth flex v-c">
-                    	<input class="flex-1 mr-10" disabled="disabled" v-model="regForm.birth">
+                    	<input class="flex-1 mr-10" disabled="disabled" v-model="regData.birthday">
                     	<i class="iconfont icon-calendar"></i>
                     </div>
                 </div>
@@ -54,19 +48,19 @@
             <div class="form-line">
                 <label class="label">手机号码：</label>
                 <div class="flex-1">
-                    <input class="ipt full" type="tel" v-model.trim="regForm.mobile">
+                    <input class="ipt full" type="tel" v-model.trim="regData.mobile">
                 </div>
             </div>
             <div class="form-line">
                 <label class="label">个性标签：</label>
                 <div class="flex-1">
-                    <label class="checkbox" v-for="i in 5" :key="i"><input type="checkbox" :value="i" v-model="regForm.tags"><span class="tag">#标签</span></label>
+                    <label class="checkbox" v-for="i in 5" :key="i"><input type="checkbox" :value="i" v-model="regData.tags"><span class="tag">#标签</span></label>
                 </div>
             </div>
             <div class="form-line">
                 <label class="label">标 &nbsp; &nbsp; &nbsp; 语：</label>
                 <div class="flex-1">
-                    <textarea v-model.trim="regForm.slogan"></textarea>
+                    <textarea v-model.trim="regData.slogan"></textarea>
                 </div>
             </div>
             <div class="form-line">
@@ -74,7 +68,7 @@
                 <div class="flex-1">
                     <label class="upload-img">
                     	<input type="file" @change="uploadImg($event,'avatar',0)">
-                    	<img v-if="regForm.avatar.length>0" :src="regForm.avatar">
+                    	<img v-if="regData.avatar.length>0" :src="regData.avatar">
                     	<div class="inner" v-else>
                     		<i class="iconfont icon-plus"></i>
 							<p>上传头像</p>
@@ -85,7 +79,7 @@
             <div class="form-line">
                 <label class="label">图片上传：</label>
                 <div class="flex-1 flex">
-                    <label class="upload-img" v-for="item,i in regForm.imgs">
+                    <label class="upload-img" v-for="(item,i) in regData.image" :key="i">
                     	<input type="file" @change="uploadImg($event,'img',i)">
                     	<img v-if="item.length>0" :src="item">
                     	<div class="inner" v-else>
@@ -113,7 +107,7 @@
 		<!-- 日期选择 -->
 		<mt-datetime-picker
 			ref="datePicker"
-		  	:value="regForm.birth"
+		  	:value="regData.birthday"
 		  	type="date"
 		  	year-format="{value} 年"
 		  	month-format="{value} 月"
@@ -126,6 +120,8 @@
 </template>
 
 <script>
+import { Promise, reject, resolve } from 'q';
+let OSS = require('ali-oss')
 let codeTimer = null
 export default {
 	name: 'Appoint',
@@ -135,21 +131,22 @@ export default {
     data () {
     	return {
     		sliders: ["images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png"],
-    		regForm: {
-    			realName: '',
-    			nickName: '',
-    			type: '1',
-    			idno: '',
-    			sex: '',
-    			birth: '1990-01-01',
-    			mobile: '',
-    			tags: [],
-    			slogan: '',
-    			avatar: '',
-    			imgs: ['','',''],
-    			voice: '',
-    			isAgree: false
-    		}
+            regData: {
+                name: '',
+                nickname: '',
+                city_id: '',
+                identity_type: '',
+                identity: '',
+                birthday: '1990-01-01',
+                gender: '',
+                mobile: '',
+                wechat_id: '',
+                audio: '',
+                avatar: '',
+                image: ['','',''],
+                slogan: '',
+                tags: []
+            }
     	}
     },
     methods: {
@@ -157,17 +154,87 @@ export default {
     		this.$refs.datePicker.open()
     	},
     	handleConfirmDate (val) {
-    		this.regForm.birth = this.siteUtils.formatDate(val)
-    	},
+    		this.regData.birthday = this.siteUtils.formatDate(val)
+        },
+        pushAvatarOSS () {
+            this.putToOSS(this.regData.avatar).then((url) => {
+                this.regData.avatar = url
+            }).catch((err) => {
+                console.log(err);
+            });
+        },
+        pushImageOSS () {
+            let tmp = []
+            this.regData.image.forEach(img => {
+                if (img) {
+                    this.putToOSS(img)
+                    .then((url) => {
+                        tmp.push(url)
+                    }).then(()=>{
+                        this.regData.image = tmp
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                }
+            })
+        },
     	submitAction (e) {
     		e.preventDefault();
-	    	// if(this.regForm.school.length==0){
+	    	// if(this.regData.school.length==0){
 	    	// 	this.$toast('请选择校区')
 	    	// 	return false
-	    	// }
+            // }
+            console.log(this.regData)
+            return new Promise((resolve, reject) => {
+                this.pushAvatarOSS()
+                this.pushImageOSS()
+                resolve()
+            }).then(()=>{
+                console.log(this.regData);
+            })
+            
 	    	this.$toast('注册成功')
 			this.$router.push('/')
-    	},
+        },
+        putToOSS (urlData) {
+            return new Promise((resolve, reject) => {
+                const base64 = urlData.split(',').pop();
+                const fileType = urlData.split(';').shift().split(':').pop();
+                // base64转blob
+                const blob = this.siteUtils.toBlob(base64, fileType);
+                // blob转arrayBuffer
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(blob);
+                reader.onload = (event) => {
+                    // 配置
+                    const client = new OSS({
+                        endpoint: 'http://image.suavechat.com',
+                        region: 'oss-ap-southeast-2',
+                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                        accessKeyId: 'LTAIcJ2c4DfxlC90',
+                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                        bucket: 'suave-image',
+                        cname: true
+                    });
+                    // 文件名
+                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
+                    // arrayBuffer转Buffer
+                    const buffer = new OSS.Buffer(event.target.result);
+                    // 上传
+                    client.put(objectKey, buffer).then((result) => {
+                        console.log('url: ',result.url);
+                        resolve(result.url)
+                        /* e.g. result = {
+                            name: "1511601396119.png",
+                            res: {status: 200, statusCode: 200, headers: {…}, size: 0, aborted: false, …},
+                            url: "http://bucket.oss-cn-shenzhen.aliyuncs.com/1511601396119.png"
+                        } */
+                    }).catch((err) => {
+                        console.log(err);
+                    });
+                }
+            })
+        },
     	uploadImg (eve,type,index) {
     		let dotPos = eve.target.files[0].name.lastIndexOf(".")
             let fileNameLen = eve.target.files[0].name.length
@@ -179,10 +246,10 @@ export default {
             }
             this.siteUtils.imageFileCompress(eve.target.files[0]).then(res=>{
             	if(type=='avatar'){
-            		this.regForm.avatar = res
+            		this.regData.avatar = res
             	}else{
-            		this.$set(this.regForm.imgs,index,res)
-            	}
+            		this.$set(this.regData.image,index,res)
+                }
             })
     	},
     	uploadVoice (e) {},

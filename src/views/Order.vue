@@ -11,7 +11,7 @@
 			</div>
 		</div>
 		<ul class="order-list">
-			<li class="order-item flex" v-for="item,i in dataList" :key="i" @click="showDetail(item,i)">
+			<li class="order-item flex" v-for="(item,i) in dataList" :key="i" @click="showDetail(item,i)">
 				<img class="avatar" :src="item.avatar" :alt="item.name">
 				<div class="details flex-1">
 					<div class="flex v-c mb-10">

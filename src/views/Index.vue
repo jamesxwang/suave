@@ -42,7 +42,7 @@
             </div>
         </div>
         <ul class="suave-list">
-            <li v-for="item,i in dataList" :key="i">
+            <li v-for="(item,i) in dataList" :key="i">
                 <router-link :to="'/detail?id='+item.id">
                     <div class="img">
                         <img :src="item.img" :alt="item.name">

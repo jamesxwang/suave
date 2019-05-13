@@ -2,7 +2,7 @@
 	<div class="page-detail">
 		<div class="banner">
             <mt-swipe :auto="4000">
-                <mt-swipe-item v-for="item,i in data.imgs" :key="i"><img :src="item"></mt-swipe-item>
+                <mt-swipe-item v-for="(item,i) in data.imgs" :key="i"><img :src="item"></mt-swipe-item>
             </mt-swipe>
             <a class="close" href="javascript:;" @click="goBack"><i class="iconfont icon-close"></i></a>
         </div>
@@ -16,7 +16,7 @@
             </p>
             <p class="slogan">{{data.desc}}</p>
             <p class="tags">
-                <span class="tag active" v-for="item,i in data.tags" :key="i">{{item}}</span>
+                <span class="tag active" v-for="(item,i) in data.tags" :key="i">{{item}}</span>
             </p>
         </div>
         <div class="btn-wrap flex v-c h-c">
