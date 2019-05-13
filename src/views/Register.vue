@@ -208,7 +208,7 @@ export default {
                 reader.onload = (event) => {
                     // 配置
                     const client = new OSS({
-                        endpoint: 'http://image.suavechat.com',
+                        endpoint: 'image.suavechat.com',
                         region: 'oss-ap-southeast-2',
                         //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
                         accessKeyId: 'LTAIcJ2c4DfxlC90',
