@@ -14,7 +14,7 @@ module.exports = {
     port: 9018,
     proxy: {
       '/api': {
-        target: 'http://g.ginakwok.com',
+        target: 'http://115.146.85.81:8080',
         ws: true,
         changeOrigin: true
       }
