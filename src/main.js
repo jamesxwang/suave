@@ -73,7 +73,7 @@ let request = function (options) {
 	}
 
 	if(showLoading){
-		Vue.$indicator.open({
+		Indicator.open({
 	  		spinnerType: 'fading-circle'
 		})
 	}
@@ -85,14 +85,14 @@ let request = function (options) {
 			responseType: options.dataType || 'json',
 			data: needStrParam ? '' : data
 		}).then(res=>{
-			showLoading && Vue.$indicator.close()
+			showLoading && Indicator.close()
 			if(res.data.success){
 				resolve(res.data)
 			}else{
 				reject(res.data)
 			}
 		}).catch(e=>{
-			showLoading && Vue.$indicator.close()
+			showLoading && Indicator.close()
 			reject(e)
 		})
 	})

@@ -176,5 +176,9 @@ export default{
             u8arr[n] = bytes.charCodeAt(n);
         }
         return new Blob([u8arr], { type: fileType });
-    }
+	},
+	cloneObj(obj) {
+		const clone = {...obj}
+		return clone
+	}
 }

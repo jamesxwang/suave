@@ -146,7 +146,8 @@ export default {
                 image: ['','',''],
                 slogan: '',
                 tags: []
-            }
+            },
+            postData: {}
     	}
     },
     methods: {
@@ -157,23 +158,23 @@ export default {
     		this.regData.birthday = this.siteUtils.formatDate(val)
         },
         pushAvatarOSS () {
-            this.putToOSS(this.regData.avatar).then((url) => {
-                this.regData.avatar = url
+            this.putToOSS(this.postData.avatar).then((url) => {
+                this.postData.avatar = url
             }).catch((err) => {
                 console.log(err);
             });
         },
         pushImageOSS () {
             let tmp = []
-            this.regData.image.forEach(img => {
+            this.postData.image.forEach(img => {
                 if (img) {
                     this.putToOSS(img)
                     .then((url) => {
                         tmp.push(url)
                     }).then(()=>{
-                        this.regData.image = tmp
+                        this.postData.image = tmp
                     }).catch(err => {
-                        console.log(err);
+                        this.$toast('程序异常，请联系管理员')
                     });
                 }
             })
@@ -184,17 +185,27 @@ export default {
 	    	// 	this.$toast('请选择校区')
 	    	// 	return false
             // }
-            console.log(this.regData)
+            this.postData = this.siteUtils.cloneObj(this.regData)
             return new Promise((resolve, reject) => {
                 this.pushAvatarOSS()
                 this.pushImageOSS()
                 resolve()
-            }).then(()=>{
-                console.log(this.regData);
+            }).then(() => {
+                console.log(this.postData);
+                // http post: /api/v1/anchor/apply/ 
+                this.$ajax({
+                    method: 'POST', 
+                    url: '/api/v1/anchor/apply/', 
+                    data: this.postData,
+                    showLoading: true
+                }).then(res => {
+                   console.log(res)
+	    	        this.$toast('注册成功')
+			        this.$router.push('/')
+                }, error => {
+                    this.$toast('程序异常，请联系管理员:' + error.message)
+                })
             })
-            
-	    	this.$toast('注册成功')
-			this.$router.push('/')
         },
         putToOSS (urlData) {
             return new Promise((resolve, reject) => {
@@ -222,15 +233,15 @@ export default {
                     const buffer = new OSS.Buffer(event.target.result);
                     // 上传
                     client.put(objectKey, buffer).then((result) => {
-                        console.log('url: ',result.url);
                         resolve(result.url)
                         /* e.g. result = {
                             name: "1511601396119.png",
                             res: {status: 200, statusCode: 200, headers: {…}, size: 0, aborted: false, …},
-                            url: "http://bucket.oss-cn-shenzhen.aliyuncs.com/1511601396119.png"
+                            url: "http://image.suavechat.com/1511601396119.png"
                         } */
                     }).catch((err) => {
-                        console.log(err);
+                        reject()
+                        this.$toast('程序异常，请联系管理员')
                     });
                 }
             })
