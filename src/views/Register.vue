@@ -93,15 +93,24 @@
                 <label class="label">上传语音：</label>
                 <div class="flex-1">
                     <label class="upload-img upload-voice">
-                    	<input type="file" @change="uploadVoice()">
+                    	<input type="file" @change="uploadVoice($event)">
                     	<div class="inner">
                     		<i class="iconfont icon-upload"></i> 上传文件
                     	</div>
                     </label>
                 </div>
             </div>
+            <div class="form-line" v-show="audioPreview">
+                <label class="label">语音预览：</label>
+                <div class="flex-1">
+                    <audio id="audioPreview" src="" v-show="false"></audio>
+                    <button id="playAudioBtn" type="submit" class="btn small round" @click="playAudio()">
+                        <i class="iconfont icon-horn"></i>
+                    </button>
+                </div>
+            </div>
             <div class="mt-20 text-center">
-            	<button type="submit" class="btn round">确认申请</button>
+            	<button type="submit" class="btn round audio">确认申请</button>
             </div>
         </form>
 		<!-- 日期选择 -->
@@ -147,7 +156,9 @@ export default {
                 slogan: '',
                 tags: []
             },
-            postData: {}
+            postData: {},
+            audioPreview: false,
+            audioType: ''
     	}
     },
     methods: {
@@ -157,41 +168,46 @@ export default {
     	handleConfirmDate (val) {
     		this.regData.birthday = this.siteUtils.formatDate(val)
         },
-        pushAvatarOSS () {
-            this.putToOSS(this.postData.avatar).then((url) => {
-                this.postData.avatar = url
-            }).catch((err) => {
-                console.log(err);
-            });
-        },
-        pushImageOSS () {
-            let tmp = []
-            this.postData.image.forEach(img => {
-                if (img) {
-                    this.putToOSS(img)
-                    .then((url) => {
-                        tmp.push(url)
-                    }).then(()=>{
-                        this.postData.image = tmp
-                    }).catch(err => {
-                        this.$toast('程序异常，请联系管理员')
-                    });
-                }
-            })
-        },
     	submitAction (e) {
     		e.preventDefault();
 	    	// if(this.regData.school.length==0){
 	    	// 	this.$toast('请选择校区')
 	    	// 	return false
             // }
-            this.postData = this.siteUtils.cloneObj(this.regData)
+            
             return new Promise((resolve, reject) => {
-                this.pushAvatarOSS()
-                this.pushImageOSS()
+                this.postData = this.siteUtils.cloneObj(this.regData)
+                if (this.postData.avatar) {
+                    this.putToOSS(this.postData.avatar,'image').then((url) => {
+                        this.postData.avatar = url
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+                }
+                let tmp = []
+                this.postData.image.forEach(img => {
+                    if (img) {
+                        this.putToOSS(img,'image')
+                        .then((url) => {
+                            tmp.push(url)
+                        }).then(()=>{
+                            this.postData.image = tmp
+                        }).catch(err => {
+                            this.$toast('程序异常，请联系管理员1')
+                        });
+                    }
+                })
+                if (this.postData.audio) {
+                    this.putToOSS(this.postData.audio,'audio')
+                    .then((url) => {
+                        this.postData.audio = url
+                    }).catch(err => {
+                        this.$toast('程序异常，请联系管理员2')
+                    });
+                }
                 resolve()
             }).then(() => {
-                console.log(this.postData);
+                console.log("注册：",this.postData);
                 // http post: /api/v1/anchor/apply/ 
                 this.$ajax({
                     method: 'POST', 
@@ -201,48 +217,81 @@ export default {
                 }).then(res => {
                    console.log(res)
 	    	        this.$toast('注册成功')
-			        this.$router.push('/')
+			        // this.$router.push('/')
                 }, error => {
-                    this.$toast('程序异常，请联系管理员:' + error.message)
+                    this.$toast('程序异常，请联系管理员3:' + error.message)
                 })
             })
         },
-        putToOSS (urlData) {
+        putToOSS (urlData, type) {
             return new Promise((resolve, reject) => {
-                const base64 = urlData.split(',').pop();
-                const fileType = urlData.split(';').shift().split(':').pop();
-                // base64转blob
-                const blob = this.siteUtils.toBlob(base64, fileType);
-                // blob转arrayBuffer
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(blob);
-                reader.onload = (event) => {
-                    // 配置
-                    const client = new OSS({
-                        endpoint: 'image.suavechat.com',
-                        region: 'oss-ap-southeast-2',
-                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                        accessKeyId: 'LTAIcJ2c4DfxlC90',
-                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
-                        bucket: 'suave-image',
-                        cname: true
-                    });
-                    // 文件名
-                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
-                    // arrayBuffer转Buffer
-                    const buffer = new OSS.Buffer(event.target.result);
-                    // 上传
-                    client.put(objectKey, buffer).then((result) => {
-                        resolve(result.url)
-                        /* e.g. result = {
-                            name: "1511601396119.png",
-                            res: {status: 200, statusCode: 200, headers: {…}, size: 0, aborted: false, …},
-                            url: "http://image.suavechat.com/1511601396119.png"
-                        } */
-                    }).catch((err) => {
-                        reject()
-                        this.$toast('程序异常，请联系管理员')
-                    });
+                if (type === 'image') {
+                    const base64 = urlData.split(',').pop();
+                    const fileType = urlData.split(';').shift().split(':').pop();
+                    // base64转blob
+                    const blob = this.siteUtils.toBlob(base64, fileType);
+                    // blob转arrayBuffer
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(blob);
+                    reader.onload = (event) => {
+                        // 配置
+                        const client = new OSS({
+                            endpoint: 'image.suavechat.com',
+                            region: 'oss-ap-southeast-2',
+                            //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                            accessKeyId: 'LTAIcJ2c4DfxlC90',
+                            accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                            bucket: 'suave-image',
+                            cname: true
+                        });
+                        // 文件名
+                        const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
+                        // arrayBuffer转Buffer
+                        const buffer = new OSS.Buffer(event.target.result);
+                        // 上传
+                        client.put(objectKey, buffer).then((result) => {
+                            resolve(result.url)
+                            /* e.g. result = {
+                                name: "1511601396119.png",
+                                res: {status: 200, statusCode: 200, headers: {…}, size: 0, aborted: false, …},
+                                url: "http://image.suavechat.com/1511601396119.png"
+                            } */
+                        }).catch((err) => {
+                            reject()
+                            this.$toast('程序异常，请联系管理员4')
+                        });
+                    }
+                } else if (type === 'audio') {
+                    const base64 = urlData.split(',').pop();
+                    const fileType = this.audioType.split('.').pop()
+                    // base64转blob
+                    const blob = this.siteUtils.toBlob(base64, fileType);
+                    // blob转arrayBuffer
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(blob);
+                    reader.onload = (event) => {
+                        // 配置
+                        const client = new OSS({
+                            endpoint: 'audio.suavechat.com',
+                            region: 'oss-ap-southeast-2',
+                            //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                            accessKeyId: 'LTAIcJ2c4DfxlC90',
+                            accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                            bucket: 'suave-audio',
+                            cname: true
+                        });
+                        // 文件名
+                        const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
+                        // arrayBuffer转Buffer
+                        const buffer = new OSS.Buffer(event.target.result);
+                        // 上传
+                        client.put(objectKey, buffer).then((result) => {
+                            resolve(result.url)
+                        }).catch((err) => {
+                            reject()
+                            this.$toast('程序异常，请联系管理员5')
+                        });
+                    }
                 }
             })
         },
@@ -262,8 +311,55 @@ export default {
             		this.$set(this.regData.image,index,res)
                 }
             })
-    	},
-    	uploadVoice (e) {},
+        },
+        getObjectURL (file) {  
+            let url = null;  
+            if (window.createObjectURL != undefined) { // basic  
+                url = window.createObjectURL(file);  
+            } else if (window.URL != undefined) { // mozilla(firefox)  
+                url = window.URL.createObjectURL(file);  
+            } else if (window.webkitURL != undefined) { // webkit or chrome  
+                url = window.webkitURL.createObjectURL(file);  
+            }
+            return url;  
+        },
+        playAudio() {
+            document.getElementById('audioPreview').play()
+        },
+    	uploadVoice (e) {
+            let dotPos = e.target.files[0].name.lastIndexOf(".")
+            let fileNameLen = e.target.files[0].name.length
+            let fileType = e.target.files[0].name.substring(dotPos, fileNameLen).toLowerCase()
+            let imgReg = /(\.ogg|\.m4a|\.wav|\.mp3)/
+            if(!imgReg.test(fileType)){
+            	this.$toast('请上传音频格式')
+            	return
+            }
+            this.siteUtils.audioFileCompress(e.target.files[0]).then(res=>{
+                this.regData.audio = res
+                let objUrl = this.getObjectURL(e.target.files[0])
+                document.getElementById('audioPreview').setAttribute('src', objUrl)
+                this.audioType = fileType
+                let audioTime = this.getTime()
+                if (audioTime > 20) {
+                    this.$toast('请上传20秒以内的音频')
+                    return
+                }
+                this.audioPreview = true
+            })
+        },
+        getTime() {
+            setTimeout(() => {
+                let duration = document.getElementById('audioPreview').duration;  
+                if(isNaN(duration)){  
+                    this.getTime()
+                }  
+                else{
+                    console.info("该音频的总时间为："+duration+"秒")  
+                    return duration
+                }  
+            }, 10);
+        },
         fixScroll () {
             setTimeout(()=>{
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;

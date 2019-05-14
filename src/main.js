@@ -45,6 +45,16 @@ axios.interceptors.request.use(config => {
 	return Promise.reject(err)
 })
 
+// let uploadOSS = function (type, options) {
+// 	return new Promise((resolve, reject) => {
+// 		if (type === 'image') {
+
+// 		} else if (type === 'audio') {
+			
+// 		}
+// 	})
+// }
+
 let request = function (options) {
 	let dataParams = options.data
 	let data = {}
@@ -98,6 +108,7 @@ let request = function (options) {
 	})
 }
 
+// Vue.prototype.$oss = uploadOSS
 Vue.prototype.$axios = axios
 Vue.prototype.$ajax = request
 Vue.prototype.siteConfig = config
