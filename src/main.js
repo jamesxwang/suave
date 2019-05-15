@@ -24,14 +24,14 @@ axios.defaults.timeout = 5000
 // axios兼容IE 8-9
 axios.interceptors.response.use(response => {
 	// IE 8-9
-	if (response.data == null && response.config.responseType === 'json' && response.request.responseText != null) {
-		try {
-			// eslint-disable-next-line no-param-reassign
-			response.data = JSON.parse(response.request.responseText)
-		} catch (e) {
-			// ignored
-		}
-	}
+	// if (response.data == null && response.config.responseType === 'json' && response.request.responseText != null) {
+	// 	try {
+	// 		// eslint-disable-next-line no-param-reassign
+	// 		response.data = JSON.parse(response.request.responseText)
+	// 	} catch (e) {
+	// 		// ignored
+	// 	}
+	// }
 	return response
 })
 
@@ -39,6 +39,7 @@ axios.interceptors.request.use(config => {
 	const API_KEY = '227415ba68c811e9b1a48c8590c7151e'
 	config.headers = {
 	  'X-API-KEY': API_KEY,
+	  'Content-Type':'application/json'
 	}
 	return config
 },err => {
@@ -55,50 +56,27 @@ axios.interceptors.request.use(config => {
 // 	})
 // }
 
-let request = function (options) {
-	let dataParams = options.data
-	let data = {}
+let http = function (options) {
+	let method = options.method.toLowerCase()
 	let requestUrl = options.url
 	let showLoading = options.showLoading==undefined ? true : options.showLoading
-
-	if(options.upload){ // 上传图片
-		return axios({
-			url: config.baseApi + requestUrl,
-			method: options.method,
-			responseType: 'json',
-			data: options.data,
-			headers:{'Content-Type':'multipart/form-data'}
-		})
-	}
-
-	for (let key in dataParams) {
-		data[key] = dataParams[key]
-	}
-	data = qs.stringify(data)
-	let method = options.method.toLowerCase()
-	let needStrParam = method === 'get' || method === 'put' || method === 'delete'
-	if(data.length && needStrParam){
-		requestUrl += config.baseApi.indexOf('?')>=0 ? '&' : '?'
-		requestUrl += data
-	}
-
 	if(showLoading){
 		Indicator.open({
 	  		spinnerType: 'fading-circle'
 		})
 	}
-	
-	return new Promise(function(resolve, reject){
+	console.log('DATA:',options.data)
+  	return new Promise(function(resolve, reject){
 		axios({
 			url: config.baseApi + requestUrl,
-			method: options.method,
-			responseType: options.dataType || 'json',
-			data: needStrParam ? '' : data
+			method: method,
+			data: options.data
 		}).then(res=>{
+			console.log('SUCCESS:',res);
 			showLoading && Indicator.close()
-			if(res.data.success){
+			if (res.status == 200 && res.data && res.data.err_msg === 'success') {
 				resolve(res.data)
-			}else{
+			} else {
 				reject(res.data)
 			}
 		}).catch(e=>{
@@ -108,9 +86,63 @@ let request = function (options) {
 	})
 }
 
+// let request = function (options) {
+// 	let dataParams = options.data
+// 	let data = {}
+// 	let requestUrl = options.url
+// 	let showLoading = options.showLoading==undefined ? true : options.showLoading
+
+// 	if(options.upload){ // 上传图片
+// 		return axios({
+// 			url: config.baseApi + requestUrl,
+// 			method: options.method,
+// 			responseType: 'json',
+// 			data: options.data,
+// 			headers:{'Content-Type':'multipart/form-data'}
+// 		})
+// 	}
+
+// 	for (let key in dataParams) {
+// 		data[key] = dataParams[key]
+// 	}
+// 	data = qs.stringify(data)
+// 	let method = options.method.toLowerCase()
+// 	let needStrParam = method === 'get' || method === 'put' || method === 'delete'
+// 	if(data.length && needStrParam){
+// 		requestUrl += config.baseApi.indexOf('?')>=0 ? '&' : '?'
+// 		requestUrl += data
+// 	}
+
+// 	if(showLoading){
+// 		Indicator.open({
+// 	  		spinnerType: 'fading-circle'
+// 		})
+// 	}
+	
+// 	return new Promise(function(resolve, reject){
+// 		axios({
+// 			url: config.baseApi + requestUrl,
+// 			method: options.method,
+// 			responseType: options.dataType || 'json',
+// 			data: needStrParam ? '' : data
+// 		}).then(res=>{
+// 			showLoading && Indicator.close()
+// 			if(res.data.success){
+// 				resolve(res.data)
+// 			}else{
+// 				reject(res.data)
+// 			}
+// 		}).catch(e=>{
+// 			showLoading && Indicator.close()
+// 			reject(e)
+// 		})
+// 	})
+// }
+
 // Vue.prototype.$oss = uploadOSS
+Vue.prototype.$http = http
 Vue.prototype.$axios = axios
-Vue.prototype.$ajax = request
+// Vue.prototype.$ajax = request
 Vue.prototype.siteConfig = config
 Vue.prototype.siteUtils = utils
 

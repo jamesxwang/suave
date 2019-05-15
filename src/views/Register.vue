@@ -20,6 +20,16 @@
                 </div>
             </div>
             <div class="form-line">
+                <label class="label">城 &nbsp; &nbsp; &nbsp; 市：</label>
+                <div class="flex-1">
+                	<div class="select">
+                		<select v-model="regData.city_id" >
+	                        <option v-for="(city,i) in allCities" :key="i" :value="city.id">{{ city.name }}</option>
+	                    </select>
+                	</div>
+                </div>
+            </div>
+            <div class="form-line">
                 <label class="label">身份证号：</label>
                  <div class="flex-1">
                     <input class="ipt full" type="text" v-model.trim="regData.identity">
@@ -29,9 +39,8 @@
                 <label class="label">性 &nbsp; &nbsp; &nbsp; 别：</label>
                 <div class="flex-1">
                 	<div class="select">
-                		<select v-model="regData.gender">
-	                        <option value="1">男</option>
-	                        <option value="2">女</option>
+                		<select v-model="regData.gender" >
+	                        <option v-for="(gender,i) in allGender" :key="i" :value="gender.id">{{ gender.gender }}</option>
 	                    </select>
                 	</div>
                 </div>
@@ -52,9 +61,15 @@
                 </div>
             </div>
             <div class="form-line">
+                <label class="label">微 &nbsp; &nbsp; &nbsp; 信：</label>
+                <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="regData.wechat_id">
+                </div>
+            </div>
+            <div class="form-line">
                 <label class="label">个性标签：</label>
                 <div class="flex-1">
-                    <label class="checkbox" v-for="i in 5" :key="i"><input type="checkbox" :value="i" v-model="regData.tags"><span class="tag">#标签</span></label>
+                    <label class="checkbox" v-for="tag in allTags" :key="tag"><input type="checkbox" :value="tag" v-model="regData.tags"><span class="tag">{{ tag }}</span></label>
                 </div>
             </div>
             <div class="form-line">
@@ -144,10 +159,9 @@ export default {
                 name: '',
                 nickname: '',
                 city_id: '',
-                identity_type: '',
                 identity: '',
                 birthday: '1990-01-01',
-                gender: '',
+                gender: '-1',
                 mobile: '',
                 wechat_id: '',
                 audio: '',
@@ -157,6 +171,9 @@ export default {
                 tags: []
             },
             postData: {},
+            allCities: [],
+            allGender: [],
+            allTags: [],
             audioPreview: false,
             audioType: ''
     	}
@@ -168,130 +185,166 @@ export default {
     	handleConfirmDate (val) {
     		this.regData.birthday = this.siteUtils.formatDate(val)
         },
-    	submitAction (e) {
-    		e.preventDefault();
-	    	// if(this.regData.school.length==0){
-	    	// 	this.$toast('请选择校区')
-	    	// 	return false
-            // }
-            
-            return new Promise((resolve, reject) => {
-                this.postData = this.siteUtils.cloneObj(this.regData)
-                if (this.postData.avatar) {
-                    this.putToOSS(this.postData.avatar,'image').then((url) => {
-                        this.postData.avatar = url
-                    }).catch((err) => {
-                        console.error(err);
-                    })
-                }
-                let tmp = []
-                this.postData.image.forEach(img => {
-                    if (img) {
-                        this.putToOSS(img,'image')
-                        .then((url) => {
-                            tmp.push(url)
-                        }).then(()=>{
-                            this.postData.image = tmp
-                        }).catch(err => {
-                            this.$toast('程序异常，请联系管理员1')
-                        });
+        validateImages() {
+            let imageNotEmpty = false
+            this.regData.image.forEach(img => {
+                if (img)
+                    imageNotEmpty = true
+            })
+            return imageNotEmpty
+        },
+        validateForm () {
+            const idReg =/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$)/;
+            if (!this.regData) {
+                this.$toast('请输入真实姓名')
+                return false
+            }
+            else if (!this.regData.nickname) {
+                this.$toast('请输入昵称')
+                return false
+            }
+            else if (!this.regData.city_id) {
+                this.$toast('请选择所在城市')
+                return false
+            }
+            else if (!this.regData.identity || !idReg.test(this.regData.identity)) {
+                this.$toast('请输入正确的身份证号码')
+                return false
+            }
+            else if (this.regData.gender == '-1') {
+                this.$toast('请选择性别')
+                return false
+            }
+            else if (!this.regData.mobile) {
+                this.$toast('请输入手机号')
+                return false
+            }
+            else if (!this.regData.wechat_id) {
+                this.$toast('请输入微信号')
+                return false
+            }
+            else if (!this.regData.avatar) {
+                this.$toast('请上传头像')
+                return false
+            }
+            else if (!this.validateImages()) {
+                this.$toast('请上传至少一张照片')
+                return false
+            }
+            else if (!this.regData.audio) {
+                this.$toast('请上传语音')
+                return false
+            }
+            return true
+        },
+        async submitAction (e) {
+            e.preventDefault();
+            if(!this.validateForm()) {
+                return
+            }
+            try {
+                let avatarUrl = await this.putImgOSS(this.regData.avatar)
+                let imgsUrlList = []
+                for (let i = 0; i < this.regData.image.length; ++i) {
+                    if (this.regData.image[i]) {
+                        let imgUrl = await this.putImgOSS(this.regData.image[i])
+                        imgsUrlList.push(imgUrl)
                     }
-                })
-                if (this.postData.audio) {
-                    this.putToOSS(this.postData.audio,'audio')
-                    .then((url) => {
-                        this.postData.audio = url
-                    }).catch(err => {
-                        this.$toast('程序异常，请联系管理员2')
-                    });
                 }
-                resolve()
-            }).then(() => {
-                console.log("注册：",this.postData);
-                // http post: /api/v1/anchor/apply/ 
-                this.$ajax({
+                let audioUrl = await this.putAudioOSS(this.regData.audio)
+                this.postData = this.siteUtils.cloneObj(this.regData)
+                this.postData.avatar = avatarUrl
+                this.postData.image = imgsUrlList
+                this.postData.audio = audioUrl
+                console.log('申请陪聊：',this.postData)
+                // http post: api/v1/anchor/apply/ 
+                this.$http({
                     method: 'POST', 
-                    url: '/api/v1/anchor/apply/', 
+                    url: 'api/v1/anchor/apply/', 
                     data: this.postData,
                     showLoading: true
                 }).then(res => {
                    console.log(res)
-	    	        this.$toast('注册成功')
+                    this.$toast('申请成功，请耐心等待审核，即将返回微信...')
+                    setTimeout(() => {
+                        window.opener = null
+                        window.close()
+                        WeixinJSBridge.call('closeWindow')
+                        wx.closeWindow();
+                    }, 3 * 1000);
 			        // this.$router.push('/')
                 }, error => {
                     this.$toast('程序异常，请联系管理员3:' + error.message)
                 })
+            } catch (e) {
+                console.log(e)
+            }
+        },
+        async putAudioOSS (urlData) {
+            return new Promise((resolve, reject) => {
+                const base64 = urlData.split(',').pop();
+                const fileType = this.audioType.split('.').pop()
+                // base64转blob
+                const blob = this.siteUtils.toBlob(base64, fileType);
+                // blob转arrayBuffer
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(blob);
+                reader.onload = (event) => {
+                    // 配置
+                    const client = new OSS({
+                        endpoint: 'audio.suavechat.com',
+                        region: 'oss-ap-southeast-2',
+                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                        accessKeyId: 'LTAIcJ2c4DfxlC90',
+                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                        bucket: 'suave-audio',
+                        cname: true
+                    });
+                    // 文件名
+                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
+                    // arrayBuffer转Buffer
+                    const buffer = new OSS.Buffer(event.target.result);
+                    // 上传
+                    client.put(objectKey, buffer).then((result) => {
+                        console.log('上传成功',result)
+                        resolve(result.url)
+                    }).catch((err) => {
+                        reject()
+                    })
+                }
             })
         },
-        putToOSS (urlData, type) {
+        async putImgOSS (urlData) {
             return new Promise((resolve, reject) => {
-                if (type === 'image') {
-                    const base64 = urlData.split(',').pop();
-                    const fileType = urlData.split(';').shift().split(':').pop();
-                    // base64转blob
-                    const blob = this.siteUtils.toBlob(base64, fileType);
-                    // blob转arrayBuffer
-                    const reader = new FileReader();
-                    reader.readAsArrayBuffer(blob);
-                    reader.onload = (event) => {
-                        // 配置
-                        const client = new OSS({
-                            endpoint: 'image.suavechat.com',
-                            region: 'oss-ap-southeast-2',
-                            //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                            accessKeyId: 'LTAIcJ2c4DfxlC90',
-                            accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
-                            bucket: 'suave-image',
-                            cname: true
-                        });
-                        // 文件名
-                        const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
-                        // arrayBuffer转Buffer
-                        const buffer = new OSS.Buffer(event.target.result);
-                        // 上传
-                        client.put(objectKey, buffer).then((result) => {
-                            resolve(result.url)
-                            /* e.g. result = {
-                                name: "1511601396119.png",
-                                res: {status: 200, statusCode: 200, headers: {…}, size: 0, aborted: false, …},
-                                url: "http://image.suavechat.com/1511601396119.png"
-                            } */
-                        }).catch((err) => {
-                            reject()
-                            this.$toast('程序异常，请联系管理员4')
-                        });
-                    }
-                } else if (type === 'audio') {
-                    const base64 = urlData.split(',').pop();
-                    const fileType = this.audioType.split('.').pop()
-                    // base64转blob
-                    const blob = this.siteUtils.toBlob(base64, fileType);
-                    // blob转arrayBuffer
-                    const reader = new FileReader();
-                    reader.readAsArrayBuffer(blob);
-                    reader.onload = (event) => {
-                        // 配置
-                        const client = new OSS({
-                            endpoint: 'audio.suavechat.com',
-                            region: 'oss-ap-southeast-2',
-                            //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                            accessKeyId: 'LTAIcJ2c4DfxlC90',
-                            accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
-                            bucket: 'suave-audio',
-                            cname: true
-                        });
-                        // 文件名
-                        const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
-                        // arrayBuffer转Buffer
-                        const buffer = new OSS.Buffer(event.target.result);
-                        // 上传
-                        client.put(objectKey, buffer).then((result) => {
-                            resolve(result.url)
-                        }).catch((err) => {
-                            reject()
-                            this.$toast('程序异常，请联系管理员5')
-                        });
-                    }
+                const base64 = urlData.split(',').pop();
+                const fileType = urlData.split(';').shift().split(':').pop();
+                // base64转blob
+                const blob = this.siteUtils.toBlob(base64, fileType);
+                // blob转arrayBuffer
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(blob);
+                reader.onload = (event) => {
+                    // 配置
+                    const client = new OSS({
+                        endpoint: 'image.suavechat.com',
+                        region: 'oss-ap-southeast-2',
+                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                        accessKeyId: 'LTAIcJ2c4DfxlC90',
+                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                        bucket: 'suave-image',
+                        cname: true
+                    });
+                    // 文件名
+                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
+                    // arrayBuffer转Buffer
+                    const buffer = new OSS.Buffer(event.target.result);
+                    // 上传
+                    client.put(objectKey, buffer).then((result) => {
+                        console.log('上传成功',result)
+                        resolve(result.url)
+                    }).catch((err) => {
+                        reject()
+                    });
                 }
             })
         },
@@ -323,8 +376,9 @@ export default {
             }
             return url;  
         },
-        playAudio() {
+        playAudio () {
             document.getElementById('audioPreview').play()
+            // TODO: 测试苹果系统播放
         },
     	uploadVoice (e) {
             let dotPos = e.target.files[0].name.lastIndexOf(".")
@@ -348,7 +402,7 @@ export default {
                 this.audioPreview = true
             })
         },
-        getTime() {
+        getTime () {
             setTimeout(() => {
                 let duration = document.getElementById('audioPreview').duration;  
                 if(isNaN(duration)){  
@@ -365,12 +419,48 @@ export default {
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
+        },
+        getAllCities () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/city/', 
+            }).then(res => {
+                console.log(res)
+                this.allCities = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllGender () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/gender/', 
+            }).then(res => {
+                console.log(res)
+                this.allGender = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllTags () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/tag/', 
+            }).then(res => {
+                console.log(res)
+                this.allTags = res.data
+            }, error => {
+                console.log(error)
+            })
         }
     },
     created () {
-    	this.setTitle('注册陪聊')
+        this.setTitle('注册陪聊')
     },
 	mounted(){
+        this.getAllCities()
+        this.getAllGender()
+        this.getAllTags()
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){
@@ -382,7 +472,6 @@ export default {
                 elems[i].addEventListener('blur', this.fixScroll); 
             }
         }
-        
-	}
+    }
 }
 </script>
