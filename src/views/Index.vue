@@ -45,21 +45,22 @@
             <li v-for="(item,i) in dataList" :key="i">
                 <router-link :to="'/detail?id='+item.id">
                     <div class="img">
-                        <img :src="item.img" :alt="item.name">
-                        <i class="iconfont icon-horn"></i>
-                        <p class="level" v-if="item.status==1"><span>{{item.level}}</span></p>
+                        <img :src="item.avatar" :alt="item.name">
+                        <i class="iconfont icon-horn" @click="playAudio(item.id)"></i>
+                        <audio :id="'audio_'+item.id" :src="item.audio" v-show="false"></audio>
+                        <p class="level" v-if="true"><span>{{item.level}}级</span></p>
                         <p class="level off" v-else><span>离线</span></p>
                     </div>
                     <div class="details">
                         <div class="flex v-c">
-                            <p class="name flex-1">{{item.name}}
-                                <i class="iconfont icon-boy" v-if="item.sex==1"></i>
+                            <p class="name flex-1">{{item.nickname}}
+                                <i class="iconfont icon-boy" v-if="item.gender==1"></i>
                                 <i class="iconfont icon-girl" v-else></i>
                             </p>
                             <p class="price">￥{{item.price}}/起</p>
                         </div>
-                        <div class="props">{{item.xz}} {{item.age}}</div>
-                        <div class="desc twice-line">{{item.desc}}</div>
+                        <div class="props">{{item.constellation}} {{item.age}}</div>
+                        <div class="desc twice-line">{{item.slogan}}</div>
                     </div>
                 </router-link>
             </li>
@@ -68,6 +69,7 @@
 </template>
 
 <script>
+let OSS = require('ali-oss')
 export default {
 	name: 'Index',
     components: {},
@@ -76,81 +78,91 @@ export default {
             activeSort:0,
     		dataList:[{
                 id: 1,
-                img: "images/temp-poster.png",
-                level: "A级",
+                avatar: "images/temp-poster.png",
+                level: "A",
                 status: 1,
-                name: "白冰",
-                sex: 1,
-                xz: "处女座",
+                nickname: "白冰",
+                gender: 1,
+                constellation: "处女座",
                 age: 28,
                 price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            },{
-                id: 2,
-                img: "images/temp-poster.png",
-                level: "A级",
-                status: 0,
-                name: "白冰",
-                sex: 2,
-                xz: "处女座",
-                age: 28,
-                price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            },{
-                id: 3,
-                img: "images/temp-poster.png",
-                level: "B级",
-                status: 1,
-                name: "白冰",
-                sex: 1,
-                xz: "处女座",
-                age: 28,
-                price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            },{
-                id: 1,
-                img: "images/temp-poster.png",
-                level: "A级",
-                status: 1,
-                name: "白冰",
-                sex: 1,
-                xz: "处女座",
-                age: 28,
-                price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            },{
-                id: 2,
-                img: "images/temp-poster.png",
-                level: "A级",
-                status: 0,
-                name: "白冰",
-                sex: 2,
-                xz: "处女座",
-                age: 28,
-                price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            },{
-                id: 3,
-                img: "images/temp-poster.png",
-                level: "B级",
-                status: 1,
-                name: "白冰",
-                sex: 1,
-                xz: "处女座",
-                age: 28,
-                price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去"
+                slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
             }]
     	}
     },
     methods: {
-        getAnchorList () {
+        getImgOSS (imgKey) {
+            return new Promise((resolve, reject) => {
+                // 配置
+                const client = new OSS({
+                    endpoint: 'image.suavechat.com',
+                    region: 'oss-ap-southeast-2',
+                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                    accessKeyId: 'LTAIcJ2c4DfxlC90',
+                    accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                    bucket: 'suave-image',
+                    cname: true
+                });
+                client.get(imgKey).then((result) => {
+                    let blobURL = this.siteUtils.getImageURL(result.content)
+                    resolve(blobURL)
+                }).catch((err) => {
+                    reject()
+                });
+            })
+        },
+        getAudioOSS (audioKey) {
+            return new Promise((resolve, reject) => {
+                // 配置
+                const client = new OSS({
+                    endpoint: 'audio.suavechat.com',
+                    region: 'oss-ap-southeast-2',
+                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                    accessKeyId: 'LTAIcJ2c4DfxlC90',
+                    accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                    bucket: 'suave-audio',
+                    cname: true
+                });
+                client.get(audioKey).then((result) => {
+                    let blobURL = this.siteUtils.getAudioURL(result.content)
+                    resolve(blobURL)
+                }).catch((err) => {
+                    reject()
+                });
+            })
+        },
+        playAudio (id) {
+            const $audio = document.getElementById('audio_' + result.data[i].id)
+            audio = new Audio($audio.src);
+            audio.play();
+        },
+        getAnchorList (i) {
+            if (!i) {
+                i = 0
+            }
             this.$http({
                 method: 'GET', 
-                url: 'api/v1/anchor/list/', 
-            }).then(res => {
-                // this.allCities = res.data
-                console.log(res)
+                url: `api/v1/anchor/list/?index=${i}`, 
+            }).then(result => {
+                for (let i = 0; i < result.data.length; ++i) {
+                    this.getImgOSS(result.data[i].avatar).then(res => {
+                        result.data[i].avatar = res
+                    })
+                }
+                this.getAudioOSS(result.data[i].audio).then(res => {
+                    // res 是 base64 文件
+                    // TODO: base64 转成可播放的blob文件
+
+                    // 这里返回一个blob对象
+                    let blob = this.siteUtils.toBlob(res, 'audio/x-m4a')
+                    // 返回 blob: http://xxxxxx
+                    let url = URL.createObjectURL(blob)
+                    console.log(url)
+                    const $audio = document.getElementById('audio_' + result.data[i].id)
+                    $audio.src = url
+                })
+                this.dataList = result.data
+                console.log('getAnchorList',result)
             }, error => {
                 console.log(error)
             })

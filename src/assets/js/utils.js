@@ -198,5 +198,32 @@ export default{
 	cloneObj(obj) {
 		const clone = {...obj}
 		return clone
+	},
+	getImageURL (uint8Array) {
+		return new Promise((resolve, reject)=>{
+			const reader = new FileReader()
+			reader.onerror=reject
+			let buffer = uint8Array.buffer
+			let blob = new Blob([buffer])
+			reader.onload= (event) => {
+				let dataURL = event.target.result
+				resolve(dataURL)
+			}
+			reader.readAsDataURL(blob)
+		})
+	},
+	getAudioURL (uint8Array) {
+		return new Promise((resolve, reject)=>{
+			const reader = new FileReader()
+			reader.onerror=reject
+			let buffer = uint8Array.buffer
+			let blob = new Blob([buffer])
+			reader.onload= (event) => {
+				let dataURL = event.target.result.split(',').pop()
+				// let dataURL = event.target.result.split(',').pop()
+				resolve(dataURL)
+			}
+			reader.readAsDataURL(blob)
+		})
 	}
 }

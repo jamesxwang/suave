@@ -8,12 +8,6 @@
         <h2>注册陪聊</h2>
         <form class="form-blk" @submit="submitAction">
             <div class="form-line">
-                <label class="label">真实姓名：</label>
-                <div class="flex-1">
-                	<input class="ipt full" type="text" v-model.trim="regData.name">
-                </div>
-            </div>   
-            <div class="form-line">
                 <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
                 <div class="flex-1">
                     <input class="ipt full" type="text" v-model.trim="regData.nickname">
@@ -22,17 +16,7 @@
             <div class="form-line">
                 <label class="label">城 &nbsp; &nbsp; &nbsp; 市：</label>
                 <div class="flex-1">
-                	<div class="select">
-                		<select v-model="regData.city_id" >
-	                        <option v-for="(city,i) in allCities" :key="i" :value="city.id">{{ city.name }}</option>
-	                    </select>
-                	</div>
-                </div>
-            </div>
-            <div class="form-line">
-                <label class="label">身份证号：</label>
-                 <div class="flex-1">
-                    <input class="ipt full" type="text" v-model.trim="regData.identity">
+                    <input class="ipt full" type="text" v-model.trim="regData.city">
                 </div>
             </div>
             <div class="form-line">
@@ -55,15 +39,38 @@
                 </div>
             </div>
             <div class="form-line">
-                <label class="label">手机号码：</label>
-                <div class="flex-1">
-                    <input class="ipt full" type="tel" v-model.trim="regData.mobile">
-                </div>
-            </div>
-            <div class="form-line">
                 <label class="label">微 &nbsp; &nbsp; &nbsp; 信：</label>
                 <div class="flex-1">
                     <input class="ipt full" type="text" v-model.trim="regData.wechat_id">
+                </div>
+            </div>
+            <div class="form-line">
+                <label class="label">职 &nbsp; &nbsp; &nbsp; 业：</label>
+                <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="regData.occupation">
+                </div>
+            </div>
+            <div class="form-line">
+                <label class="label">特 &nbsp; &nbsp; &nbsp; 长：</label>
+                <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="regData.skill">
+                </div>
+            </div>
+            <div class="form-line">
+                <label class="label">在线时间：</label>
+                <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="regData.online">
+                </div>
+            </div>
+            <div class="form-line">
+                <label class="label">陪聊经验：</label>
+                <div class="flex-1">
+                	<div class="select">
+                		<select v-model="regData.experience" >
+                            <option :value="true">有</option>
+                            <option :value="false">无</option>
+	                    </select>
+                	</div>
                 </div>
             </div>
             <div class="form-line">
@@ -156,19 +163,20 @@ export default {
     	return {
     		sliders: ["images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png"],
             regData: {
-                name: '',
                 nickname: '',
-                city_id: '',
-                identity: '',
+                city: '',
                 birthday: '1990-01-01',
                 gender: '-1',
-                mobile: '',
                 wechat_id: '',
                 audio: '',
                 avatar: '',
                 image: ['','',''],
                 slogan: '',
-                tags: []
+                tags: [],
+                experience: null,
+                occupation: '',
+                skill: '',
+                online: ''
             },
             postData: {},
             allCities: [],
@@ -194,33 +202,36 @@ export default {
             return imageNotEmpty
         },
         validateForm () {
-            const idReg =/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$)/;
-            if (!this.regData) {
-                this.$toast('请输入真实姓名')
-                return false
-            }
-            else if (!this.regData.nickname) {
+            if (!this.regData.nickname) {
                 this.$toast('请输入昵称')
                 return false
             }
-            else if (!this.regData.city_id) {
+            else if (!this.regData.city) {
                 this.$toast('请选择所在城市')
-                return false
-            }
-            else if (!this.regData.identity || !idReg.test(this.regData.identity)) {
-                this.$toast('请输入正确的身份证号码')
                 return false
             }
             else if (this.regData.gender == '-1') {
                 this.$toast('请选择性别')
                 return false
             }
-            else if (!this.regData.mobile) {
-                this.$toast('请输入手机号')
-                return false
-            }
             else if (!this.regData.wechat_id) {
                 this.$toast('请输入微信号')
+                return false
+            }
+            else if (!this.regData.occupation) {
+                this.$toast('请输入职业')
+                return false
+            }
+            else if (!this.regData.skill) {
+                this.$toast('请输入特长')
+                return false
+            }
+            else if (!this.regData.online) {
+                this.$toast('请输入在线时间')
+                return false
+            }
+            else if (this.regData.experience == null) {
+                this.$toast('请选择是否有陪聊经验')
                 return false
             }
             else if (!this.regData.avatar) {
@@ -264,11 +275,10 @@ export default {
                     data: this.postData,
                     showLoading: true
                 }).then(res => {
-                    this.$toast('申请成功，请耐心等待审核，即将返回微信...')
+                    this.$toast('您的申请已提交，请等待客服联系审核，即将返回微信...')
                     setTimeout(() => {
                         window.opener = null
                         window.close()
-                        WeixinJSBridge.call('closeWindow')
                         wx.closeWindow();
                     }, 3 * 1000);
 			        // this.$router.push('/')
@@ -306,7 +316,7 @@ export default {
                     // 上传
                     client.put(objectKey, buffer).then((result) => {
                         console.log('上传音频成功',result)
-                        resolve(result.url)
+                        resolve(objectKey)
                     }).catch((err) => {
                         reject()
                     })
@@ -340,7 +350,7 @@ export default {
                     // 上传
                     client.put(objectKey, buffer).then((result) => {
                         console.log('上传图片成功',result)
-                        resolve(result.url)
+                        resolve(objectKey)
                     }).catch((err) => {
                         reject()
                     });
@@ -419,16 +429,6 @@ export default {
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
         },
-        getAllCities () {
-            this.$http({
-                method: 'GET', 
-                url: 'api/v1/info/city/', 
-            }).then(res => {
-                this.allCities = res.data
-            }, error => {
-                console.log(error)
-            })
-        },
         getAllGender () {
             this.$http({
                 method: 'GET', 
@@ -451,10 +451,9 @@ export default {
         }
     },
     created () {
-        this.setTitle('注册陪聊')
+        this.setTitle('注册店员')
     },
 	mounted(){
-        this.getAllCities()
         this.getAllGender()
         this.getAllTags()
         let u = navigator.userAgent
