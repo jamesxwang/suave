@@ -69,6 +69,7 @@
 </template>
 
 <script>
+import { type } from 'os';
 let OSS = require('ali-oss')
 export default {
 	name: 'Index',
@@ -87,7 +88,8 @@ export default {
                 age: 28,
                 price: 10.0,
                 slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            }]
+            }],
+            currentAudioType: null
     	}
     },
     methods: {
@@ -104,7 +106,7 @@ export default {
                     cname: true
                 });
                 client.get(imgKey).then((result) => {
-                    let blobURL = this.siteUtils.getImageURL(result.content)
+                    let blobURL = this.siteUtils.getImageURL(result.content)                    
                     resolve(blobURL)
                 }).catch((err) => {
                     reject()
@@ -125,6 +127,7 @@ export default {
                 });
                 client.get(audioKey).then((result) => {
                     let blobURL = this.siteUtils.getAudioURL(result.content)
+                    this.currentAudioType = result.res.requestUrls[0].split('.').pop()
                     resolve(blobURL)
                 }).catch((err) => {
                     reject()
@@ -132,9 +135,8 @@ export default {
             })
         },
         playAudio (id) {
-            const $audio = document.getElementById('audio_' + result.data[i].id)
-            audio = new Audio($audio.src);
-            audio.play();
+            const $audio = document.getElementById('audio_' + id)
+            $audio.play();
         },
         getAnchorList (i) {
             if (!i) {
@@ -150,16 +152,14 @@ export default {
                     })
                 }
                 this.getAudioOSS(result.data[i].audio).then(res => {
-                    // res 是 base64 文件
-                    // TODO: base64 转成可播放的blob文件
-
-                    // 这里返回一个blob对象
-                    let blob = this.siteUtils.toBlob(res, 'audio/x-m4a')
-                    // 返回 blob: http://xxxxxx
+                    if (this.currentAudioType === 'm4a') {
+                        this.currentAudioType = 'audio/x-m4a'
+                    }
+                    let blob = this.siteUtils.toBlob(res, this.currentAudioType)
                     let url = URL.createObjectURL(blob)
-                    console.log(url)
                     const $audio = document.getElementById('audio_' + result.data[i].id)
                     $audio.src = url
+                    console.log($audio)
                 })
                 this.dataList = result.data
                 console.log('getAnchorList',result)

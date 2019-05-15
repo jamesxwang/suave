@@ -168,24 +168,6 @@ export default{
 			return dataURL
 		})
 	},
-	audioFile2DataURL(audioFile) {
-		return new Promise((resolve, reject)=>{
-			const reader = new FileReader()
-			reader.onerror=reject
-
-			reader.onload = (event) => {
-				let data = event.target.result.split(',')
-				, dataURL = btoa(data[1]);                    // the actual conversion of data from binary to base64 format
-				resolve(dataURL)
-			}
-			reader.readAsDataURL(audioFile);
-		})
-	},
-	audioFileCompress(audioFile) {
-		return this.audioFile2DataURL(audioFile).then(dataURL => {
-			return dataURL
-		})
-	},
 	toBlob(urlData, fileType) {
         let bytes = window.atob(urlData);
         let n = bytes.length;

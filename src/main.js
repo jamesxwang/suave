@@ -23,15 +23,6 @@ Vue.config.productionTip = false
 axios.defaults.timeout = 5000
 // axios兼容IE 8-9
 axios.interceptors.response.use(response => {
-	// IE 8-9
-	// if (response.data == null && response.config.responseType === 'json' && response.request.responseText != null) {
-	// 	try {
-	// 		// eslint-disable-next-line no-param-reassign
-	// 		response.data = JSON.parse(response.request.responseText)
-	// 	} catch (e) {
-	// 		// ignored
-	// 	}
-	// }
 	return response
 })
 

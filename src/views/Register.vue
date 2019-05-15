@@ -125,7 +125,7 @@
             <div class="form-line" v-show="audioPreview">
                 <label class="label">语音预览：</label>
                 <div class="flex-1">
-                    <audio id="audioPreview" src="" v-show="false"></audio>
+                    <audio id="audioPreview" :src="regData.audio" v-show="false"></audio>
                     <button id="playAudioBtn" type="submit" class="btn small round" @click="playAudio()">
                         <i class="iconfont icon-horn"></i>
                     </button>
@@ -179,11 +179,13 @@ export default {
                 online: ''
             },
             postData: {},
-            allCities: [],
             allGender: [],
             allTags: [],
             audioPreview: false,
-            audioType: ''
+            audioType: '',
+            avatarFile: null,
+            audioFile: null,
+            imageFiles: []
     	}
     },
     methods: {
@@ -254,15 +256,15 @@ export default {
                 return
             }
             try {
-                let avatarUrl = await this.putImgOSS(this.regData.avatar)
+                let avatarUrl = await this.putImgOSS(this.avatarFile)
                 let imgsUrlList = []
-                for (let i = 0; i < this.regData.image.length; ++i) {
-                    if (this.regData.image[i]) {
-                        let imgUrl = await this.putImgOSS(this.regData.image[i])
+                for (let i = 0; i < this.imageFiles.length; ++i) {
+                    if (this.imageFiles[i]) {
+                        let imgUrl = await this.putImgOSS(this.imageFiles[i])
                         imgsUrlList.push(imgUrl)
                     }
                 }
-                let audioUrl = await this.putAudioOSS(this.regData.audio)
+                let audioUrl = await this.putAudioOSS(this.audioFile)
                 this.postData = this.siteUtils.cloneObj(this.regData)
                 this.postData.avatar = avatarUrl
                 this.postData.image = imgsUrlList
@@ -283,78 +285,64 @@ export default {
                     }, 3 * 1000);
 			        // this.$router.push('/')
                 }, error => {
-                    this.$toast('程序异常，请联系管理员3:' + error.message)
+                    this.$toast('程序异常，请联系管理员:' + error.message)
+                    console.log(error)
                 })
             } catch (e) {
+                this.$toast('程序异常，请联系管理员:' + e)
                 console.log(e)
             }
         },
-        async putAudioOSS (urlData) {
+        async putAudioOSS (audioFile) {
             return new Promise((resolve, reject) => {
-                const base64 = urlData.split(',').pop();
-                const fileType = this.audioType.split('.').pop()
-                // base64转blob
-                const blob = this.siteUtils.toBlob(base64, fileType);
-                // blob转arrayBuffer
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(blob);
-                reader.onload = (event) => {
-                    // 配置
-                    const client = new OSS({
-                        endpoint: 'audio.suavechat.com',
-                        region: 'oss-ap-southeast-2',
-                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                        accessKeyId: 'LTAIcJ2c4DfxlC90',
-                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
-                        bucket: 'suave-audio',
-                        cname: true
-                    });
-                    // 文件名
-                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
-                    // arrayBuffer转Buffer
-                    const buffer = new OSS.Buffer(event.target.result);
-                    // 上传
-                    client.put(objectKey, buffer).then((result) => {
-                        console.log('上传音频成功',result)
-                        resolve(objectKey)
-                    }).catch((err) => {
-                        reject()
-                    })
-                }
+                let dotPos = audioFile.name.lastIndexOf(".")
+                let fileNameLen = audioFile.name.length
+                let fileType = audioFile.name.substring(dotPos, fileNameLen).toLowerCase()
+                // 配置
+                const client = new OSS({
+                    endpoint: 'audio.suavechat.com',
+                    region: 'oss-ap-southeast-2',
+                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                    accessKeyId: 'LTAIcJ2c4DfxlC90',
+                    accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                    bucket: 'suave-audio',
+                    cname: true
+                });
+                // 文件名
+                const objectKey = `${new Date().getTime()}.${fileType.split('.').pop()}`;
+                // 上传
+                client.put(objectKey, audioFile).then((result) => {
+                    console.log('上传音频成功',result)
+                    resolve(objectKey)
+                }).catch((err) => {
+                    reject()
+                })
             })
         },
-        async putImgOSS (urlData) {
+        async putImgOSS (imgFile) {
             return new Promise((resolve, reject) => {
-                const base64 = urlData.split(',').pop();
-                const fileType = urlData.split(';').shift().split(':').pop();
-                // base64转blob
-                const blob = this.siteUtils.toBlob(base64, fileType);
-                // blob转arrayBuffer
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(blob);
-                reader.onload = (event) => {
-                    // 配置
-                    const client = new OSS({
-                        endpoint: 'image.suavechat.com',
-                        region: 'oss-ap-southeast-2',
-                        //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                        accessKeyId: 'LTAIcJ2c4DfxlC90',
-                        accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
-                        bucket: 'suave-image',
-                        cname: true
-                    });
-                    // 文件名
-                    const objectKey = `${new Date().getTime()}.${fileType.split('/').pop()}`;
-                    // arrayBuffer转Buffer
-                    const buffer = new OSS.Buffer(event.target.result);
-                    // 上传
-                    client.put(objectKey, buffer).then((result) => {
-                        console.log('上传图片成功',result)
-                        resolve(objectKey)
-                    }).catch((err) => {
-                        reject()
-                    });
-                }
+                let dotPos = imgFile.name.lastIndexOf(".")
+                let fileNameLen = imgFile.name.length
+                let fileType = imgFile.name.substring(dotPos, fileNameLen).toLowerCase() // .png
+                // 配置
+                const client = new OSS({
+                    endpoint: 'image.suavechat.com',
+                    region: 'oss-ap-southeast-2',
+                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+                    accessKeyId: 'LTAIcJ2c4DfxlC90',
+                    accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+                    bucket: 'suave-image',
+                    cname: true
+                });
+                // 文件名
+                const objectKey = `${new Date().getTime()}.${fileType.split('.').pop()}`; // 15686556541.png
+                // 上传
+                client.put(objectKey, imgFile).then((result) => {
+                    console.log('上传图片成功',result)
+                    resolve(objectKey)
+                }).catch((err) => {
+                    reject()
+                })
             })
         },
     	uploadImg (eve,type,index) {
@@ -369,10 +357,13 @@ export default {
             this.siteUtils.imageFileCompress(eve.target.files[0]).then(res=>{
             	if(type=='avatar'){
             		this.regData.avatar = res
+                    this.avatarFile = eve.target.files[0]
             	}else{
-            		this.$set(this.regData.image,index,res)
+                    this.$set(this.regData.image,index,res)
+                    this.$set(this.imageFiles,index,eve.target.files[0])
                 }
             })
+            
         },
         getObjectURL (file) {  
             let url = null;  
@@ -398,18 +389,16 @@ export default {
             	this.$toast('请上传音频格式')
             	return
             }
-            this.siteUtils.audioFileCompress(e.target.files[0]).then(res=>{
-                this.regData.audio = res
-                let objUrl = this.getObjectURL(e.target.files[0])
-                document.getElementById('audioPreview').setAttribute('src', objUrl)
-                this.audioType = fileType
-                let audioTime = this.getTime()
-                if (audioTime > 20) {
-                    this.$toast('请上传20秒以内的音频')
-                    return
-                }
-                this.audioPreview = true
-            })
+            this.audioFile = e.target.files[0]
+            let objUrl = this.getObjectURL(this.audioFile)
+            this.regData.audio = objUrl
+            this.audioType = fileType
+            let audioTime = this.getTime()
+            if (audioTime > 20) {
+                this.$toast('请上传20秒以内的音频')
+                return
+            }
+            this.audioPreview = true
         },
         getTime () {
             setTimeout(() => {
