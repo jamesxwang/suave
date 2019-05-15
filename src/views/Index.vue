@@ -144,6 +144,17 @@ export default {
     	}
     },
     methods: {
+        getAnchorList () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/anchor/list/', 
+            }).then(res => {
+                // this.allCities = res.data
+                console.log(res)
+            }, error => {
+                console.log(error)
+            })
+        },
     	search (e) {
             e.preventDefault()
             console.log(123)
@@ -151,12 +162,13 @@ export default {
         changeSort (e,type) {
             console.log(e.target.value)
             this.activeSort=type
-        }
+        },
     },
     created () {
     	this.setTitle('Suave')
     },
 	mounted(){
+        this.getAnchorList()
 	}
 }
 </script>

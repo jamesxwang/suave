@@ -65,14 +65,13 @@ let http = function (options) {
 	  		spinnerType: 'fading-circle'
 		})
 	}
-	console.log('DATA:',options.data)
   	return new Promise(function(resolve, reject){
 		axios({
 			url: config.baseApi + requestUrl,
 			method: method,
 			data: options.data
 		}).then(res=>{
-			console.log('SUCCESS:',res);
+			console.log('HTTP REQUEST SUCCESS:',res);
 			showLoading && Indicator.close()
 			if (res.status == 200 && res.data && res.data.err_msg === 'success') {
 				resolve(res.data)
@@ -80,6 +79,7 @@ let http = function (options) {
 				reject(res.data)
 			}
 		}).catch(e=>{
+			console.log(e);
 			showLoading && Indicator.close()
 			reject(e)
 		})

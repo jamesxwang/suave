@@ -264,7 +264,6 @@ export default {
                     data: this.postData,
                     showLoading: true
                 }).then(res => {
-                   console.log(res)
                     this.$toast('申请成功，请耐心等待审核，即将返回微信...')
                     setTimeout(() => {
                         window.opener = null
@@ -306,7 +305,7 @@ export default {
                     const buffer = new OSS.Buffer(event.target.result);
                     // 上传
                     client.put(objectKey, buffer).then((result) => {
-                        console.log('上传成功',result)
+                        console.log('上传音频成功',result)
                         resolve(result.url)
                     }).catch((err) => {
                         reject()
@@ -340,7 +339,7 @@ export default {
                     const buffer = new OSS.Buffer(event.target.result);
                     // 上传
                     client.put(objectKey, buffer).then((result) => {
-                        console.log('上传成功',result)
+                        console.log('上传图片成功',result)
                         resolve(result.url)
                     }).catch((err) => {
                         reject()
@@ -425,7 +424,6 @@ export default {
                 method: 'GET', 
                 url: 'api/v1/info/city/', 
             }).then(res => {
-                console.log(res)
                 this.allCities = res.data
             }, error => {
                 console.log(error)
@@ -436,7 +434,6 @@ export default {
                 method: 'GET', 
                 url: 'api/v1/info/gender/', 
             }).then(res => {
-                console.log(res)
                 this.allGender = res.data
             }, error => {
                 console.log(error)
@@ -447,7 +444,6 @@ export default {
                 method: 'GET', 
                 url: 'api/v1/info/tag/', 
             }).then(res => {
-                console.log(res)
                 this.allTags = res.data
             }, error => {
                 console.log(error)
