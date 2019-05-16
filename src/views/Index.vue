@@ -9,34 +9,32 @@
 		
         <div class="sort-blk flex">
             <div class="item flex-1" :class="{'active': activeSort==0}">
-                <select @change="changeSort($event,0)">
+                <label @click="changeSort($event,0)">智能排序</label>
+                <!-- <select @change="changeSort($event,0)">
                     <option value="0">智能排序</option>
                     <option value="2">综合排序</option>
                     <option value="2">按销量</option>
                 </select>
-                <i class="tri"></i>
+                <i class="tri"></i> -->
             </div>
             <div class="item flex-1" :class="{'active': activeSort==1}">
                 <select @change="changeSort($event,1)">
-                    <option value="0">等级</option>
-                    <option value="2">A级</option>
-                    <option value="2">B级</option>
+                    <option value="">等级</option>
+                    <option v-for="(level,i) in allLevel" :key="i" :value="level.id">{{ level.name }}</option>
                 </select>
                 <i class="tri"></i>
             </div>
             <div class="item flex-1" :class="{'active': activeSort==2}">
                 <select @change="changeSort($event,2)">
-                    <option value="0">性别</option>
-                    <option value="1">男</option>
-                    <option value="2">女</option>
+                    <option value="">性别</option>
+                    <option v-for="(gender,i) in allGender" :key="i" :value="gender.id">{{ gender.gender }}</option>
                 </select>
                 <i class="tri"></i>
             </div>
             <div class="item flex-1" :class="{'active': activeSort==3}">
                 <select @change="changeSort($event,3)">
-                    <option value="0">城市</option>
-                    <option value="1">北京</option>
-                    <option value="2">上海</option>
+                    <option value="">城市</option>
+                    <option v-for="(city,i) in allCities" :key="i" :value="city">{{ city }}</option>
                 </select>
                 <i class="tri"></i>
             </div>
@@ -46,9 +44,9 @@
                 <router-link :to="'/detail?id='+item.id">
                     <div class="img">
                         <img :src="item.avatar" :alt="item.name">
-                        <i class="iconfont icon-horn" @click="playAudio(item.id)"></i>
+                        <i class="iconfont icon-horn" @click.stop.prevent="playAudio(item.id)"></i>
                         <audio :id="'audio_'+item.id" :src="item.audio" v-show="false"></audio>
-                        <p class="level" v-if="true"><span>{{item.level}}级</span></p>
+                        <p class="level" v-if="true"><span>{{item.level}}</span></p>
                         <p class="level off" v-else><span>离线</span></p>
                     </div>
                     <div class="details">
@@ -89,7 +87,15 @@ export default {
                 price: 10.0,
                 slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
             }],
-            currentAudioType: null
+            currentAudioType: null,
+            allGender: [],
+            allLevel: [],
+            allCities: [],
+            params: {
+                i: 0,
+                level: null,
+                gender: null
+            }
     	}
     },
     methods: {
@@ -138,31 +144,62 @@ export default {
             const $audio = document.getElementById('audio_' + id)
             $audio.play();
         },
-        getAnchorList (i) {
-            if (!i) {
-                i = 0
-            }
+        getAnchorList (param) {
+            this.siteUtils.convertParams2Str(this.params).then(res => {
+                this.$http({
+                    method: 'GET', 
+                    url: `api/v1/anchor/list/${res}`,
+                    showLoading: true
+                }).then(result => {
+                    for (let i = 0; i < result.data.length; ++i) {
+                        this.getImgOSS(result.data[i].avatar).then(res => {
+                            result.data[i].avatar = res
+                        })
+                        this.getAudioOSS(result.data[i].audio).then(res => {
+                            if (this.currentAudioType === 'm4a') {
+                                this.currentAudioType = 'audio/x-m4a'
+                            } else {
+                                this.currentAudioType = 'audio/mpeg'
+                            }
+                            let blob = this.siteUtils.toBlob(res, this.currentAudioType)
+                            let url = URL.createObjectURL(blob)
+                            const $audio = document.getElementById('audio_' + result.data[i].id)
+                            $audio.src = url
+                        })
+                        this.dataList = result.data
+                    }
+
+                }, error => {
+                    console.log(error)
+                })
+            })
+        },
+        getAllGender () {
             this.$http({
                 method: 'GET', 
-                url: `api/v1/anchor/list/?index=${i}`, 
-            }).then(result => {
-                for (let i = 0; i < result.data.length; ++i) {
-                    this.getImgOSS(result.data[i].avatar).then(res => {
-                        result.data[i].avatar = res
-                    })
-                }
-                this.getAudioOSS(result.data[i].audio).then(res => {
-                    if (this.currentAudioType === 'm4a') {
-                        this.currentAudioType = 'audio/x-m4a'
-                    }
-                    let blob = this.siteUtils.toBlob(res, this.currentAudioType)
-                    let url = URL.createObjectURL(blob)
-                    const $audio = document.getElementById('audio_' + result.data[i].id)
-                    $audio.src = url
-                    console.log($audio)
-                })
-                this.dataList = result.data
-                console.log('getAnchorList',result)
+                url: 'api/v1/info/gender/', 
+            }).then(res => {
+                this.allGender = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllLevel () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/level/', 
+            }).then(res => {
+                this.allLevel = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllCities () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/city/', 
+            }).then(res => {
+                this.allCities = res.data
             }, error => {
                 console.log(error)
             })
@@ -172,8 +209,31 @@ export default {
             console.log(123)
         },
         changeSort (e,type) {
-            console.log(e.target.value)
+            
+            let value = e.target.value
             this.activeSort=type
+            switch (this.activeSort) {
+                // 等级
+                case 1:
+                    this.params.level = value
+                    break;
+                // 性别
+                case 2:
+                    this.params.gender = value
+                    break;
+                // 城市 TODO
+                case 3:
+                    break;
+                // 智能排序
+                default:
+                    this.params = {
+                        i: 0,
+                        level: null,
+                        gender: null
+                    }
+                    break;
+            }
+            this.getAnchorList(this.params)
         },
     },
     created () {
@@ -181,6 +241,9 @@ export default {
     },
 	mounted(){
         this.getAnchorList()
+        this.getAllGender()
+        this.getAllLevel()
+        this.getAllCities()
 	}
 }
 </script>

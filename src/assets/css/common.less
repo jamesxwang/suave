@@ -1087,12 +1087,13 @@ img{
 				overflow: hidden;
 				&>.img{
 					position: relative;
+					background-size: cover;
 					.h(134);
+					overflow: hidden;
 					&>img{
-						.h(134);
 						display: block;
 						width: 100%;
-						// min-height: 100%;
+						min-height: 100%;
 					}
 
 					&>.level{
@@ -1131,12 +1132,12 @@ img{
 						position: absolute;
 						.left(4);
 						.top(4);
-						.w(20);
-						.h(20);
+						.w(30);
+						.h(30);
 						border-radius: 50%;
 						border: 1px solid @colorPrimary;
 						color: @colorPrimary;
-						.lh(18);
+						.lh(28);
 						text-align: center;
 					}
 				}
@@ -1144,7 +1145,7 @@ img{
 				.details{
 					.pd(10);
 					.name{
-						.fs(15);
+						.fs(17);
 						color: #fff;
 
 						.iconfont{
@@ -1159,14 +1160,14 @@ img{
 					}
 					.price{
 						color: #ff3118;
-						.fs(12);
+						.fs(14);
 					}
 					.props{
 						color: #5d6b9e;
-						.fs(9);
+						.fs(12);
 					}
 					.desc{
-						.fs(10);
+						.fs(12);
 					}
 				}
 

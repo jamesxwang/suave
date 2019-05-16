@@ -207,5 +207,18 @@ export default{
 			}
 			reader.readAsDataURL(blob)
 		})
+	},
+	convertParams2Str(params) {
+		return new Promise((resolve, reject)=>{
+			let paramStr = '?'
+			paramStr += 'index=' + params.i
+			if (params.level != null && params.level!= '') {
+				paramStr += '&level=' + params.level
+			}
+			if (params.gender != null && params.gender != '') {
+				paramStr += `&gender=${params.gender}`
+			}
+			resolve(paramStr)
+		})
 	}
 }
