@@ -45,18 +45,15 @@
                 <div class="form-line">
                     <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
                     <div class="flex-1">
-                        若谷
+                        {{ data.nickname }}
                     </div>
                 </div>      
                 <div class="form-line">
                     <label class="label">产品类型：</label>
                     <div class="flex-1">
                         <div class="select">
-                            <select v-model="orderForm.type">
-                                <option value="1">产品类型1</option>
-                                <option value="2">产品类型2</option>
-                                <option value="3">产品类型3</option>
-                                <option value="4">产品类型4</option>
+                            <select v-model="orderForm.type" @change="changeTimeList($event)">
+                                <option v-for="type in allProductType" :key="type.id" :value="type.id">{{ type.name }}</option>
                             </select>
                         </div>  
                     </div>
@@ -65,11 +62,8 @@
                     <label class="label">时 &nbsp; &nbsp; &nbsp; 长：</label>
                     <div class="flex-1">
                         <div class="select">
-                            <select v-model="orderForm.time">
-                                <option value="1">时长1</option>
-                                <option value="2">时长2</option>
-                                <option value="3">时长3</option>
-                                <option value="4">时长4</option>
+                            <select v-model="orderForm.time" @change="getUnitPrice($event)">
+                                <option v-for="time in timeList" :key="time.id" :value="time.id">{{ time.name }}</option>
                             </select>
                         </div>
                     </div>
@@ -77,13 +71,13 @@
                 <div class="form-line">
                     <label class="label">单 &nbsp; &nbsp; &nbsp; 价：</label>
                     <div class="flex-1">
-                        ￥288
+                        ${{ unitPrice }}
                     </div>
                 </div>      
                 <div class="form-line">
                     <label class="label">数 &nbsp; &nbsp; &nbsp; 量：</label>
                     <div class="flex-1">
-                        <input class="ipt" type="tel" size="3" v-model.trim="orderForm.number">
+                        <input class="ipt" type="tel" size="3" v-model.number="orderForm.number">
                     </div>
                 </div>      
                 <div class="form-line">
@@ -101,26 +95,25 @@
                 <div class="price-infos">
                     <div class="item flex">
                         <p class="flex-1">原 &nbsp; &nbsp; &nbsp; 价：</p>
-                        <p>286.00</p>
+                        <p>${{ getOriginPrice() }}</p>
                     </div>
-                    <div class="item flex">
+                    <div class="item flex" v-if="false">
                         <p class="flex-1">折扣金额：</p>
                         <p>-90.00</p>
                     </div>
                     <div class="item flex">
-                        <p class="flex-1">实时汇率：</p>
-                        <p>9.00</p>
+                        <p class="flex-1">澳元汇率：</p>
+                        <p>{{ rate }}</p>
                     </div>
                     <div class="total flex">
                         <p class="flex-1">总价：</p>
-                        <p class="color-red">￥457.00</p>
+                        <p class="color-red">￥{{ getTotalPrice() }}</p>
                     </div>
                 </div>
                 <hr class="splitter">
                 <div class="form-tip">
                     <h4>用户须知</h4>
-                    <p>1、温莎石斛的发号施令，回家吃点哈看看得见哈咯；</p>
-                    <p>2、和绿化回家，喝咖啡哈刘欢发放v 房间打开 v 好；</p>
+                    <p v-for="(line,i) in instructions" :key="i">{{ line }};</p>
                 </div>
                 <div class="form-btn text-right">
                     <button type="submit" class="btn btn-red small round">确认下单</button>
@@ -134,6 +127,7 @@
 
 <script>
 import Modal from '@/components/Modal.vue'
+import { Promise, reject, resolve } from 'q';
 export default {
 	name: 'Detail',
     components: {
@@ -156,11 +150,14 @@ export default {
                 slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去",
                 tags:['#标签',"人见人爱"]
             },
+            rate: 0,
             banner: [],
             currentId: '',
             allProductType: [],
             audioURL: '',
-            priceList: [],
+            timeList: [],
+            instructions: [],
+            unitPrice: 0,
             orderForm: {
                 type: "",
                 time: "",
@@ -193,8 +190,17 @@ export default {
                 this.$toast('请填写微信')
                 return false
             }
-            this.$toast('下单成功')
-            this.modalVisible = false
+            let postData = {
+                id: this.currentId,
+                product_id: this.orderForm.type,
+                number: this.orderForm.number,
+                wechat_id: this.orderForm.wchat,
+                comment: this.orderForm.remark
+            }
+            this.order(postData).then(res => {
+                this.$toast('下单成功')
+                this.modalVisible = false
+            })
         },
         fixScroll () {
             setTimeout(()=>{
@@ -234,19 +240,83 @@ export default {
                 console.log(error)
             })
         },
-        // getPriceTable (id) {
-        //     this.$http({
-        //         method: 'GET', 
-        //         url: `api/v1/info/product/?id=${id}&type=${type.id}`,
-        //         showLoading: true
-        //     }).then(result => {
-        //         console.log('result',result)
-        //         this.priceList = result.data
-        //     }, error => {
-        //         this.$router.push('/')
-        //         console.log(error)
-        //     })
-        // }
+        changeTimeList (e) {
+            e.preventDefault()
+            let value = e.target.value
+            this.getTimeList(value)
+        },
+        getTimeList (product_type_id) {
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/info/product/?id=${this.currentId}&type=${product_type_id}`,
+                showLoading: true
+            }).then(result => {
+                this.timeList = result.data
+                this.unitPrice = 0
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+        },
+        getInstructions () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/platform/?tag=order-user-ack',
+                showLoading: true
+            }).then(result => {
+                this.instructions = result.data
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+            // api/v1/info/platform/?tag=user-order-ack
+        },
+        getUnitPrice (e) {
+            e.preventDefault()
+            let id = e.target.value
+            this.timeList.forEach(product => {
+                if (product.id == id) {
+                    this.unitPrice = product.price
+                }
+            });
+        },
+        getOriginPrice () {
+            let amount = this.orderForm.number
+            let price = this.unitPrice * amount
+            return price
+        },
+        getCurrency () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/aud-rate/',
+                showLoading: true
+            }).then(result => {
+                if (result.data && result.data.rate)
+                    this.rate = result.data.rate
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+        },
+        getTotalPrice () {
+            let origin = this.getOriginPrice()
+            let total = (this.rate * origin).toFixed(2)
+            return total
+        },
+        order (data) {
+            return new Promise((resolve, reject) => {
+                this.$http({
+                    method: 'POST', 
+                    url: 'api/v1/order/',
+                    data,
+                    showLoading: true
+                }).then(result => {
+                    console.log(result);
+                }, error => {
+                    this.$toast('订单提交失败，请重新下单')
+                })
+            })
+        }
     },
     created () {
     	this.setTitle('详情')
@@ -258,7 +328,8 @@ export default {
             this.audioURL = this.$route.query.audioURL
         this.getDetail(this.currentId)
         this.getProductType(this.currentId)
-        // this.getPriceTable(this.currentId)
+        this.getCurrency()
+        this.getInstructions()
 
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
