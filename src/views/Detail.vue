@@ -198,6 +198,7 @@ export default {
                 comment: this.orderForm.remark
             }
             this.order(postData).then(res => {
+                console.log(res);
                 this.$toast('下单成功')
                 this.modalVisible = false
             })
@@ -269,7 +270,6 @@ export default {
                 this.$router.push('/')
                 console.log(error)
             })
-            // api/v1/info/platform/?tag=user-order-ack
         },
         getUnitPrice (e) {
             e.preventDefault()
@@ -307,13 +307,14 @@ export default {
             return new Promise((resolve, reject) => {
                 this.$http({
                     method: 'POST', 
-                    url: 'api/v1/order/',
+                    url: 'api/v1/order/new/',
                     data,
                     showLoading: true
                 }).then(result => {
-                    console.log(result);
+                    resolve(result)
                 }, error => {
                     this.$toast('订单提交失败，请重新下单')
+                    reject()
                 })
             })
         }
