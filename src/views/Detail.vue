@@ -192,7 +192,7 @@ export default {
             }
             let postData = {
                 id: this.currentId,
-                product_id: this.orderForm.type,
+                product_id: this.orderForm.time,
                 number: this.orderForm.number,
                 wechat_id: this.orderForm.wchat,
                 comment: this.orderForm.remark
