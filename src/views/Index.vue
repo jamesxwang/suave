@@ -55,7 +55,7 @@
                                 <i class="iconfont icon-boy" v-if="item.gender==1"></i>
                                 <i class="iconfont icon-girl" v-else></i>
                             </p>
-                            <p class="price">￥{{item.price}}/起</p>
+                            <p class="price">${{item.price}}/起</p>
                         </div>
                         <div class="props">{{item.constellation}} {{item.age}}</div>
                         <div class="desc twice-line">{{item.slogan}}</div>
