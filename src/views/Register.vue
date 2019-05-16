@@ -145,7 +145,8 @@
 		  	date-format="{value} 日"
 		  	:start-date="new Date('1960-01-01')"
 		  	:end-date="new Date()"
-		  	@confirm="handleConfirmDate">
+		  	@confirm="handleConfirmDate"
+            @visible-change="handleValueChange">
 		</mt-datetime-picker>
 	</div>
 </template>
@@ -194,6 +195,13 @@ export default {
     	},
     	handleConfirmDate (val) {
     		this.regData.birthday = this.siteUtils.formatDate(val)
+        },
+        handleValueChange (val) {
+            if (val) {
+                document.body.addEventListener('touchmove', (e) => {e.preventDefault()},{passive: false})
+            } else {
+                document.body.removeEventListener('touchmove', (e) => {e.preventDefault()},{passive: false})
+            }
         },
         validateImages() {
             let imageNotEmpty = false
