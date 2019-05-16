@@ -2,19 +2,20 @@
 	<div class="page-detail">
 		<div class="banner">
             <mt-swipe :auto="4000">
-                <mt-swipe-item v-for="(item,i) in data.imgs" :key="i"><img :src="item"></mt-swipe-item>
+                <mt-swipe-item v-for="(item,i) in banner" :key="i"><img :src="item"></mt-swipe-item>
             </mt-swipe>
             <a class="close" href="javascript:;" @click="goBack"><i class="iconfont icon-close"></i></a>
         </div>
         <div class="info-blk">
             <p>
-                <span class="name">{{data.name}}</span>
+                <span class="name">{{data.nickname}}</span>
                 <i class="iconfont icon-boy" v-if="data.sex==1"></i>
                 <i class="iconfont icon-girl" v-else></i>
-                <span class="props">{{data.age}}岁 {{data.xz}}</span>
-                <i class="iconfont icon-horn"></i>
+                <span class="props">{{data.age}}岁 {{data.constellation}}</span>
+                <i class="iconfont icon-horn"  @click="playAudio()" ></i>
+                <audio id="audioPreview" :src="audioURL" v-show="false"></audio>
             </p>
-            <p class="slogan">{{data.desc}}</p>
+            <p class="slogan">{{data.slogan}}</p>
             <p class="tags">
                 <span class="tag active" v-for="(item,i) in data.tags" :key="i">{{item}}</span>
             </p>
@@ -26,17 +27,15 @@
             <thead>
                 <tr>
                     <th>&nbsp;</th>
-                    <th>产品类型</th>
-                    <th>产品类型</th>
-                    <th>产品类型</th>
+                    <th v-for="(type,i) in data.product_type" :key="i">{{ type }}</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="i in 8" :key="i">
-                    <th>时长</th>
-                    <td>100</td>
-                    <td>123</td>
-                    <td>64</td>
+                <tr v-for="(product,i) in data.product" :key="i">
+                    <template v-for="(col,j) in product">
+                        <th v-if="j==0" :key="j" >{{ col || '-' }}</th>
+                        <td v-else :key="j">{{ col || '-' }}</td>
+                    </template>
                 </tr>
             </tbody>
         </table>
@@ -149,14 +148,19 @@ export default {
                 imgs: ["images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png","images/temp-banner.png"],
                 level: "A级",
                 status: 1,
-                name: "白冰",
+                nickname: "白冰",
                 sex: 1,
-                xz: "处女座",
+                constellation: "处女座",
                 age: 28,
                 price: 10.0,
-                desc: "不如就陷在这里吧，天亮再回去个回去湖区回去",
+                slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去",
                 tags:['#标签',"人见人爱"]
             },
+            banner: [],
+            currentId: '',
+            allProductType: [],
+            audioURL: '',
+            priceList: [],
             orderForm: {
                 type: "",
                 time: "",
@@ -167,6 +171,10 @@ export default {
     	}
     },
     methods: {
+        playAudio () {
+            document.getElementById('audioPreview').play()
+            // TODO: 测试苹果系统播放
+        },
     	submitOrder (e){
             e.preventDefault()
             if(this.orderForm.type.length==0){
@@ -193,12 +201,65 @@ export default {
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
-        }
+        },
+        getDetail (id) {
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/anchor/detail/?id=${id}`,
+                showLoading: true
+            }).then(result => {
+                this.data = result.data
+                this.siteUtils.getImgOSS(this.data.avatar).then(res => {
+                    this.banner.push(res)
+                })
+                for (let i = 0; i < this.data.image.length; ++i) {
+                    this.siteUtils.getImgOSS(this.data.image[i]).then(res => {
+                        this.banner.push(res)
+                    })
+                }
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+        },
+        getProductType (id) {
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/info/product-type/?id=${id}`,
+                showLoading: true
+            }).then(result => {
+                this.allProductType = result.data
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+        },
+        // getPriceTable (id) {
+        //     this.$http({
+        //         method: 'GET', 
+        //         url: `api/v1/info/product/?id=${id}&type=${type.id}`,
+        //         showLoading: true
+        //     }).then(result => {
+        //         console.log('result',result)
+        //         this.priceList = result.data
+        //     }, error => {
+        //         this.$router.push('/')
+        //         console.log(error)
+        //     })
+        // }
     },
     created () {
     	this.setTitle('详情')
     },
 	mounted(){
+        if (!this.currentId)
+            this.currentId = this.$route.query.id;
+        if (!this.audioURL)
+            this.audioURL = this.$route.query.audioURL
+        this.getDetail(this.currentId)
+        this.getProductType(this.currentId)
+        // this.getPriceTable(this.currentId)
+
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){

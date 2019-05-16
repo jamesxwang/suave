@@ -41,7 +41,7 @@
         </div>
         <ul class="suave-list">
             <li v-for="(item,i) in dataList" :key="i">
-                <router-link :to="'/detail?id='+item.id">
+                <router-link :to="'/detail?id='+item.id+'&audioURL='+item.audio">
                     <div class="img">
                         <img :src="item.avatar" :alt="item.name">
                         <i class="iconfont icon-horn" @click.stop.prevent="playAudio(item.id)"></i>
@@ -165,6 +165,7 @@ export default {
                             let url = URL.createObjectURL(blob)
                             const $audio = document.getElementById('audio_' + result.data[i].id)
                             $audio.src = url
+                            result.data[i].audio = url
                         })
                         this.dataList = result.data
                     }

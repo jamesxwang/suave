@@ -1,3 +1,5 @@
+let OSS = require('ali-oss')
+
 function formatNum(m){
 	m = Number(m)
 	return m<10 ? '0'+m : m 
@@ -220,5 +222,25 @@ export default{
 			}
 			resolve(paramStr)
 		})
-	}
+	},
+	getImgOSS (imgKey) {
+		return new Promise((resolve, reject) => {
+			// 配置
+			const client = new OSS({
+				endpoint: 'image.suavechat.com',
+				region: 'oss-ap-southeast-2',
+				//云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
+				accessKeyId: 'LTAIcJ2c4DfxlC90',
+				accessKeySecret: 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw',
+				bucket: 'suave-image',
+				cname: true
+			});
+			client.get(imgKey).then((result) => {
+				let blobURL = this.getImageURL(result.content)                    
+				resolve(blobURL)
+			}).catch((err) => {
+				reject()
+			});
+		})
+	},
 }

@@ -126,7 +126,7 @@
                 <label class="label">语音预览：</label>
                 <div class="flex-1">
                     <audio id="audioPreview" :src="regData.audio" v-show="false"></audio>
-                    <button id="playAudioBtn" type="submit" class="btn small round" @click="playAudio()">
+                    <button id="playAudioBtn" class="btn small round" @click="playAudio()">
                         <i class="iconfont icon-horn"></i>
                     </button>
                 </div>
@@ -291,7 +291,6 @@ export default {
                         window.close()
                         wx.closeWindow();
                     }, 3 * 1000);
-			        // this.$router.push('/')
                 }, error => {
                     this.$toast('程序异常，请联系管理员:' + error.message)
                     console.log(error)
