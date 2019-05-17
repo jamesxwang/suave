@@ -1,9 +1,8 @@
 {
-  "name": "vue2-manage",
-  "version": "1.0.1",
-  "description": "vue2-manage",
-  "author": "cangdu <1264889788@qq.com>",
-  "license": "GPL",
+  "name": "suave-manage",
+  "version": "0.1.0",
+  "description": "suave-manage",
+  "author": "James Wang <jameswang95@gmail.com>",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=online node build/dev-server.js",

@@ -7,7 +7,7 @@
 		  		</div>
 		    	<el-form :model="loginForm" :rules="rules" ref="loginForm">
 					<el-form-item prop="username">
-						<el-input v-model="loginForm.username" placeholder="用户名"><span>dsfsf</span></el-input>
+						<el-input v-model="loginForm.username" placeholder="用户名"><span></span></el-input>
 					</el-form-item>
 					<el-form-item prop="password">
 						<el-input type="password" placeholder="密码" v-model="loginForm.password"></el-input>
@@ -17,15 +17,15 @@
 				  	</el-form-item>
 				</el-form>
 				<p class="tip">温馨提示：</p>
-				<p class="tip">此平台由超级管理员管理</p>
-				<p class="tip">如需加盟请联系xxxxxxx</p>
+				<p class="tip">此平台为Suave后台管理系统</p>
+				<p class="tip">如需商务合作请联系管理员</p>
 	  		</section>
 	  	</transition>
   	</div>
 </template>
 
 <script>
-	import {login, getAdminInfo} from '@/api/getData'
+	import {login} from '@/api/getData'
 	import {mapActions, mapState} from 'vuex'
 
 	export default {
@@ -49,7 +49,7 @@
 		mounted(){
 			this.showLogin = true;
 			if (!this.adminInfo.id) {
-    			this.getAdminData()
+    			// this.getAdminData()
     		}
 		},
 		computed: {

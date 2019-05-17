@@ -1,4 +1,5 @@
 import { baseUrl } from './env'
+const API_KEY = '227415ba68c811e9b1a48c8590c7151e'
 
 export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 	type = type.toUpperCase();
@@ -22,7 +23,8 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 			method: type,
 			headers: {
 				'Accept': 'application/json',
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'X-API-KEY': API_KEY
 			},
 			mode: "cors",
 			cache: "force-cache"
@@ -36,6 +38,8 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 		
 		try {
 			const response = await fetch(url, requestConfig);
+			console.log(response);
+			
 			const responseJson = await response.json();
 			return responseJson
 		} catch (error) {

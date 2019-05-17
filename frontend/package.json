@@ -1,6 +1,8 @@
 {
-  "name": "Suave",
+  "name": "suave",
   "version": "0.1.0",
+  "description": "suave-manage",
+  "author": "James Wang <jameswang95@gmail.com>",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
