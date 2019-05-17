@@ -1,5 +1,5 @@
 FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY ./frontend/dist /usr/share/nginx/html/frontend
-COPY ./manage/manage /usr/share/nginx/html/manage
+COPY ./manage/admin /usr/share/nginx/html/admin
 EXPOSE 80 443
