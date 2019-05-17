@@ -38,6 +38,14 @@ export default new Router({
 				keepAlive: false,
 				requireAuth: false
 			}
+		},{
+			path: '/random',
+			name: 'Random',
+			component: Index,
+			meta: {
+				keepAlive: true,
+				requireAuth: false
+			}
 		}],
 		meta: {
 			keepAlive: false,

@@ -5,7 +5,7 @@
                 <i class="iconfont icon-preview"></i>
                 <p>浏览</p>
             </router-link>
-            <li class="flex-1" @click="randomOrder">
+            <li class="flex-1" @click="randomOrder" :class="{'active': $route.path=='/random'}">
                 <i class="iconfont icon-random"></i>
                 <p>随机下单</p>
             </li>
@@ -40,7 +40,13 @@ export default {
         }
     },
     created () {
-    	
+    },
+    watch: {
+        $route: function (val) {
+            if (this.$route.path=='/random') {
+                this.randomOrder()
+            }
+        }
     }
 }
 </script>
