@@ -207,15 +207,9 @@ export default {
                 url: `api/v1/order/?id=${item.id}`, 
                 showLoading: true
             }).then(res => {
-                // 0 => 店员
-                // 1 => 用户
-                this.type = res.type
-                this.dataList = res.data
-                this.dataList.forEach(data => {
-                    this.siteUtils.getImgOSS(data.avatar).then(res => {
-                        data.avatar = res
-                    })
-                });
+                console.log(res);
+    		    this.modalVisible = true
+                
             }, error => {
                 console.log(error)
             })
