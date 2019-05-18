@@ -43,7 +43,7 @@ export default new Router({
 			name: 'Random',
 			component: Index,
 			meta: {
-				keepAlive: true,
+				keepAlive: false,
 				requireAuth: false
 			}
 		}],
