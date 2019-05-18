@@ -24,7 +24,19 @@ export default {
         theme: {
             type: String,
             default: 'white'
-        }
+        },
+         allGender: {
+            type: Array,
+            default: []
+        },
+        allLevel: {
+            type: Array,
+            default: []
+        },
+        allCities: {
+            type: Array,
+            default: []
+        },
     },
     computed: {
     },

@@ -3,48 +3,41 @@
 		<keep-alive>
             <router-view v-if="$route.meta.keepAlive"></router-view>
         </keep-alive>
-        <router-view v-if="!$route.meta.keepAlive"></router-view>
+        <router-view v-if="!$route.meta.keepAlive" :allGender="allGender" :allLevel="allLevel" :allCities="allCities"></router-view>
 
         <Footer @placeOrder="placeOrder"></Footer>
         <!-- 随机下单弹窗 start -->
-        <modal class="random-modal" title="随机下单" @close="randomModalVisible=false" v-show="randomModalVisible">
+        <modal class="random-modal" title="随机下单" @close="randomModalVisible=false" v-show="randomModalVisible"
+            :allCities="allCities"
+            :allGender="allGender"
+            :allLevel="allLevel"
+            :allTags="allTags">
             <form class="random-form" @submit="submitOrder">
                 <label class="label">等级</label>
                 <div class="select">
-                    <select v-model="randomForm.level">
-                        <option value="A">A级</option>
-                        <option value="B">B级</option>
-                        <option value="C">C级</option>
+                    <select v-model="randomForm.level" @change="getProductType($event.target.value)">
+                        <option value=""></option>
+                        <option v-for="level in allLevel" :key="level.id" :value="level.id">{{ level.name }}</option>
                     </select>
                 </div>
                 <label class="label">类型</label>
                 <div class="select">
-                    <select v-model="randomForm.type">
-                        <option value="1">类型1</option>
-                        <option value="2">类型2</option>
-                        <option value="3">类型3</option>
+                    <select v-model="randomForm.type" @change="getTimeList($event.target.value)">
+                        <option value=""></option>
+                        <option v-for="type in allProductType" :key="type.id" :value="type.id">{{ type.name }}</option>
                     </select>
                 </div>
                 
                 <label class="label">时长</label>
                 <div class="select">
                     <select v-model="randomForm.time">
-                        <option value="1">半小时</option>
-                        <option value="2">一个小时</option>
-                        <option value="3">一个半小时</option>
-                    </select>
-                </div>
-                <label class="label">城市</label>
-                <div class="select">
-                    <select v-model="randomForm.city">
-                        <option value="1">北京</option>
-                        <option value="2">上海</option>
-                        <option value="3">重庆</option>
+                        <option value=""></option>
+                        <option v-for="time in timeList" :key="time.id" :value="time.id">{{ time.name }}</option>
                     </select>
                 </div>
                 <label class="label mt-10">标签</label>
                 <div class="pb-10">
-                    <label class="checkbox" v-for="i in 10" :key="i"><input type="checkbox" :value="i" v-model="randomForm.tags"><span class="tag">#标签</span></label>
+                    <label class="checkbox" v-for="(tag,i) in allTags" :key="i"><input type="checkbox" :value="tag" v-model="randomForm.tags"><span class="tag">{{ tag }}</span></label>
                 </div>
                 <div class="text-center mt-20">
                    <button type="submit" class="btn round">确认下单</button> 
@@ -68,11 +61,17 @@ export default {
     		randomModalVisible: false,
             randomForm: {
                 level: 'A',
-                type: '1',
-                time: '1',
-                city: '1',
+                type: '',
+                time: '',
                 tags: []
-            }
+            },
+            allTags: [],
+            allGender: [],
+            allLevel: [],
+            allCities: [],
+            allProductType: [],
+            currentLevel: 0,
+            timeList:[],
     	}
     },
     methods: {
@@ -81,20 +80,110 @@ export default {
         },
         submitOrder (e) {
             e.preventDefault()
-            this.$toast('下单成功')
-            this.randomModalVisible = false
+            this.$http({
+                method: 'POST',
+                url: 'api/v1/order/random/',
+                showLoading: true
+            }).then(res => {
+                console.log(res);
+                this.$toast('下单成功')
+                // this.randomModalVisible = false
+            })
         },
         fixScroll () {
             setTimeout(()=>{
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
+        },
+        getAllGender () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/gender/', 
+                showLoading: true
+            }).then(res => {
+                this.allGender = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllLevel () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/level/', 
+                showLoading: true
+            }).then(res => {
+                this.allLevel = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllCities () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/city/', 
+                showLoading: true
+            }).then(res => {
+                this.allCities = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getProductType (level_id) {
+            this.currentLevel = level_id
+            if (!this.currentLevel)
+                return
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/info/product-type/?level=${level_id}`,
+                showLoading: true
+            }).then(res => {
+                this.allProductType = res.data
+                if (!this.allProductType.length)
+                    this.timeList = []
+            }, error => {
+                console.log(error)
+            })
+        },
+        getTimeList(product_type_id) {
+            if (!product_type_id)
+                return
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/info/product/?level=${this.currentLevel}&type=${product_type_id}`,
+                showLoading: true
+            }).then(result => {
+                this.timeList = result.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        getAllTags () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/tag/', 
+            }).then(res => {
+                this.allTags = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
+        checkRoute () {
+            if (this.$route.path=='/random') {
+                this.placeOrder()
+            }
         }
     },
     created(){
     	
     },
 	mounted(){
+        this.getAllGender()
+        this.getAllLevel()
+        this.getAllCities()
+        this.getAllTags()
+        this.checkRoute()
+
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){
@@ -106,7 +195,7 @@ export default {
                 elems[i].addEventListener('blur', this.fixScroll); 
             }
         }
-	},
+    },
 	destroyed () {
 		
 	}

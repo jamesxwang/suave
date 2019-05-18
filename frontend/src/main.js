@@ -3,13 +3,13 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import FastClick from 'fastclick'
+// import FastClick from 'fastclick'
 import config from './assets/js/config'
 import utils from './assets/js/utils'
 import axios from 'axios'
-import qs from 'qs'
+// import qs from 'qs'
 
-FastClick.attach(document.body)
+// FastClick.attach(document.body)
 
 import 'mint-ui/lib/style.css'
 import {Toast, Indicator, DatetimePicker,Swipe, SwipeItem } from 'mint-ui'

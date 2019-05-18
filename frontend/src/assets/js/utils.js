@@ -220,6 +220,9 @@ export default{
 			if (params.gender != null && params.gender != '') {
 				paramStr += `&gender=${params.gender}`
 			}
+			if (params.city != null && params.city != '') {
+				paramStr += `&city=${params.city}`
+			}
 			resolve(paramStr)
 		})
 	},

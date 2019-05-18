@@ -88,15 +88,27 @@ export default {
                 slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
             }],
             currentAudioType: null,
-            allGender: [],
-            allLevel: [],
-            allCities: [],
             params: {
                 i: 0,
                 level: null,
-                gender: null
+                gender: null,
+                city: null
             }
     	}
+    },
+    props: {
+        allGender: {
+            type: Array,
+            default: []
+        },
+        allLevel: {
+            type: Array,
+            default: []
+        },
+        allCities: {
+            type: Array,
+            default: []
+        },
     },
     methods: {
         getImgOSS (imgKey) {
@@ -175,42 +187,11 @@ export default {
                 })
             })
         },
-        getAllGender () {
-            this.$http({
-                method: 'GET', 
-                url: 'api/v1/info/gender/', 
-            }).then(res => {
-                this.allGender = res.data
-            }, error => {
-                console.log(error)
-            })
-        },
-        getAllLevel () {
-            this.$http({
-                method: 'GET', 
-                url: 'api/v1/info/level/', 
-            }).then(res => {
-                this.allLevel = res.data
-            }, error => {
-                console.log(error)
-            })
-        },
-        getAllCities () {
-            this.$http({
-                method: 'GET', 
-                url: 'api/v1/info/city/', 
-            }).then(res => {
-                this.allCities = res.data
-            }, error => {
-                console.log(error)
-            })
-        },
     	search (e) {
             e.preventDefault()
             console.log(123)
         },
         changeSort (e,type) {
-            
             let value = e.target.value
             this.activeSort=type
             switch (this.activeSort) {
@@ -222,15 +203,17 @@ export default {
                 case 2:
                     this.params.gender = value
                     break;
-                // 城市 TODO
+                // 城市
                 case 3:
+                    this.params.city = value
                     break;
                 // 智能排序
                 default:
                     this.params = {
                         i: 0,
                         level: null,
-                        gender: null
+                        gender: null,
+                        city: null
                     }
                     break;
             }
@@ -242,9 +225,6 @@ export default {
     },
 	mounted(){
         this.getAnchorList()
-        this.getAllGender()
-        this.getAllLevel()
-        this.getAllCities()
-	}
+    }
 }
 </script>

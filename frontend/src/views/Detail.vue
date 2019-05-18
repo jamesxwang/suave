@@ -161,7 +161,7 @@ export default {
             orderForm: {
                 type: "",
                 time: "",
-                number: "",
+                number: "1",
                 wchat: "",
                 remark: ""
             }

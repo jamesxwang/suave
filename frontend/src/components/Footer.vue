@@ -40,13 +40,6 @@ export default {
         }
     },
     created () {
-    },
-    watch: {
-        $route: function (val) {
-            if (this.$route.path=='/random') {
-                this.randomOrder()
-            }
-        }
     }
 }
 </script>
