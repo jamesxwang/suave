@@ -13,6 +13,13 @@
             :allLevel="allLevel"
             :allTags="allTags">
             <form class="random-form" @submit="submitOrder">
+                <label class="label">性别</label>
+                <div class="select">
+                    <select v-model="randomForm.gender">
+                        <option value=""></option>
+                        <option v-for="gender in allGender" :key="gender.id" :value="gender.id">{{ gender.gender }}</option>
+                    </select>
+                </div>
                 <label class="label">等级</label>
                 <div class="select">
                     <select v-model="randomForm.level" @change="getProductType($event.target.value)">
@@ -22,7 +29,7 @@
                 </div>
                 <label class="label">类型</label>
                 <div class="select">
-                    <select v-model="randomForm.type" @change="getTimeList($event.target.value)">
+                    <select @change="getTimeList($event.target.value)">
                         <option value=""></option>
                         <option v-for="type in allProductType" :key="type.id" :value="type.id">{{ type.name }}</option>
                     </select>
@@ -30,14 +37,40 @@
                 
                 <label class="label">时长</label>
                 <div class="select">
-                    <select v-model="randomForm.time">
+                    <select v-model="randomForm.product_id" @change="getUnitPrice($event)">
                         <option value=""></option>
                         <option v-for="time in timeList" :key="time.id" :value="time.id">{{ time.name }}</option>
                     </select>
                 </div>
+                <label class="label">联系微信</label>
+                <div class="flex-1">
+                    <input class="ipt full" type="text" v-model.trim="randomForm.wechat_id">
+                </div>
                 <label class="label mt-10">标签</label>
                 <div class="pb-10">
                     <label class="checkbox" v-for="(tag,i) in allTags" :key="i"><input type="checkbox" :value="tag" v-model="randomForm.tags"><span class="tag">{{ tag }}</span></label>
+                </div>
+                <label class="label">备注</label>
+                <div class="flex-1">
+                    <textarea class="full" rows="3" v-model.trim="randomForm.comment"></textarea>
+                </div>
+                <div class="price-infos">
+                    <div class="item flex">
+                        <p class="flex-1">原 &nbsp; &nbsp; &nbsp; 价：</p>
+                        <p>${{ this.unitPrice }}</p>
+                    </div>
+                    <div class="item flex" v-if="false">
+                        <p class="flex-1">折扣金额：</p>
+                        <p>-90.00</p>
+                    </div>
+                    <div class="item flex">
+                        <p class="flex-1">澳元汇率：</p>
+                        <p>{{ rate }}</p>
+                    </div>
+                    <div class="total flex">
+                        <p class="flex-1">总价：</p>
+                        <p class="color-red">￥{{ getTotalPrice() }}</p>
+                    </div>
                 </div>
                 <div class="text-center mt-20">
                    <button type="submit" class="btn round">确认下单</button> 
@@ -60,10 +93,12 @@ export default {
     	return {
     		randomModalVisible: false,
             randomForm: {
+                gender: '',
                 level: 'A',
-                type: '',
-                time: '',
-                tags: []
+                product_id: '',
+                wechat_id: '',
+                tags: [],
+                comment: ''
             },
             allTags: [],
             allGender: [],
@@ -72,6 +107,8 @@ export default {
             allProductType: [],
             currentLevel: 0,
             timeList:[],
+            unitPrice: 0,
+            rate: 0,
     	}
     },
     methods: {
@@ -83,11 +120,12 @@ export default {
             this.$http({
                 method: 'POST',
                 url: 'api/v1/order/random/',
+                data: this.randomForm,
                 showLoading: true
             }).then(res => {
                 console.log(res);
                 this.$toast('下单成功')
-                // this.randomModalVisible = false
+                this.randomModalVisible = false
             })
         },
         fixScroll () {
@@ -95,6 +133,15 @@ export default {
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
+        },
+        getUnitPrice (e) {
+            e.preventDefault()
+            let id = e.target.value
+            this.timeList.forEach(product => {
+                if (product.id == id) {
+                    this.unitPrice = product.price
+                }
+            });
         },
         getAllGender () {
             this.$http({
@@ -168,6 +215,22 @@ export default {
                 console.log(error)
             })
         },
+        getCurrency () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/aud-rate/',
+                showLoading: true
+            }).then(result => {
+                if (result.data && result.data.rate)
+                    this.rate = result.data.rate
+            }, error => {
+                this.$router.push('/')
+                console.log(error)
+            })
+        },
+        getTotalPrice () {
+            return (this.rate * this.unitPrice).toFixed(2)
+        },
         checkRoute () {
             if (this.$route.path=='/random') {
                 this.placeOrder()
@@ -183,6 +246,7 @@ export default {
         this.getAllCities()
         this.getAllTags()
         this.checkRoute()
+        this.getCurrency()
 
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端

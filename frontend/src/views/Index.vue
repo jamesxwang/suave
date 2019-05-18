@@ -75,18 +75,19 @@ export default {
     data () {
     	return {
             activeSort:0,
-    		dataList:[{
-                id: 1,
-                avatar: "images/temp-poster.png",
-                level: "A",
-                status: 1,
-                nickname: "白冰",
-                gender: 1,
-                constellation: "处女座",
-                age: 28,
-                price: 10.0,
-                slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            }],
+            dataList: [],
+    		// dataList:[{
+            //     id: 1,
+            //     avatar: "images/temp-poster.png",
+            //     level: "A",
+            //     status: 1,
+            //     nickname: "白冰",
+            //     gender: 1,
+            //     constellation: "处女座",
+            //     age: 28,
+            //     price: 10.0,
+            //     slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
+            // }],
             currentAudioType: null,
             params: {
                 i: 0,

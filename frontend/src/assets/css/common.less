@@ -1326,14 +1326,46 @@ img{
 		font-weight: bold;
 		text-align: center;
 	}
-	.select{
-		background: #fff;
+	.ipt,.select, textarea{
 		border:none;
+		background: #fff;
+		color: #1e2335;
 		.mb(5);
+	}
+	textarea {
+		.mb(20);
+		&.full {
+			width: 100%;
+		}
+	}
+	.ipt{
+		.h(26);
+		.pd(0,8);
+		.lh(24);
+		background: #fff;
+		border:1px solid #666;
+		color: #1e2335;
+		&.full{
+			width: 100%;
+		}
 	}
 	.checkbox{
 		.mr(5);
 		.mb(5);
+	}
+	.price-infos{
+		&>.item{
+			.pd(0,25);
+			border-bottom: 1px solid #e8e8e8;
+			.lh(22);
+		}
+		&>.total{
+			.pd(0,25);
+			.lh(40);
+			.fs(15);
+			font-weight: bold;
+			color: #eee;
+		}
 	}
 	.btn{
 		.w(150);
