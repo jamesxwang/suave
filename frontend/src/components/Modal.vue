@@ -22,20 +22,16 @@ export default {
     props: {
         title: String,
         theme: {
-            type: String,
-            default: 'white'
+            type: String
         },
-         allGender: {
-            type: Array,
-            default: []
+        allGender: {
+            type: Array
         },
         allLevel: {
-            type: Array,
-            default: []
+            type: Array
         },
         allCities: {
-            type: Array,
-            default: []
+            type: Array
         },
     },
     computed: {

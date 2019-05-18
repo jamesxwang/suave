@@ -5,9 +5,8 @@
 	<div class="page-order">
 		<div class="order-tab-wrap">
 			<div class="order-tab flex v-c">
-				<div class="item flex-1" :class="{'active':activeTab==0}" @click="switchTab(0)">我的订单</div>
-				<div class="item flex-1" :class="{'active':activeTab==1}" @click="switchTab(1)">我的接单</div>
-				<div class="item flex-1" :class="{'active':activeTab==2}" @click="switchTab(2)">我的抢单</div>
+				<div v-if="type==0" class="item flex-1" :class="{'active':type==0}">我的订单</div>
+				<div v-if="type==1" class="item flex-1" :class="{'active':type==1}">我的接单</div>
 			</div>
 		</div>
 		<ul class="order-list">
@@ -15,13 +14,13 @@
 				<img class="avatar" :src="item.avatar" :alt="item.name">
 				<div class="details flex-1">
 					<div class="flex v-c mb-10">
-						<p class="name flex-1">接单店员：{{item.name}}</p>
-						<p class="color-red">￥{{item.price}}/起</p>
+						<p class="name flex-1">接单店员：{{item.anchor}}</p>
+						<p class="color-red">￥{{item.amount}}/起</p>
 					</div>
 					<p>产品：{{item.product}}</p>
 					<p>数量：{{item.number}}</p>
 					<div class="flex">
-						<p class="flex-1">时间：{{item.time}}</p>
+						<p class="flex-1">时间：{{ toLocalTime(item.time) }}</p>
 						<p class="color-primary">{{item.status}}</p>
 					</div>
 				</div>
@@ -143,13 +142,14 @@ export default {
     data () {
     	return {
     		activeTab: 0,
-    		modalVisible: false,
+            modalVisible: false,
+            allOrders: [],
     		dataList: [{
     			name: "若谷",
     			avatar: 'images/temp-avatar.png',
     			product: "连麦-半小时",
     			number: 10,
-    			price: 10.0,
+    			amount: 10.0,
     			time: "2019-03-30 12:45",
     			status: "待付款"
     		},{
@@ -157,7 +157,7 @@ export default {
     			avatar: 'images/temp-avatar.png',
     			product: "连麦-半小时",
     			number: 10,
-    			price: 10.0,
+    			amount: 10.0,
     			time: "2019-03-30 12:45",
     			status: "待接单"
     		},{
@@ -165,7 +165,7 @@ export default {
     			avatar: 'images/temp-avatar.png',
     			product: "连麦-半小时",
     			number: 10,
-    			price: 10.0,
+    			amount: 10.0,
     			time: "2019-03-30 12:45",
     			status: "已关闭"
     		},{
@@ -173,7 +173,7 @@ export default {
     			avatar: 'images/temp-avatar.png',
     			product: "连麦-半小时",
     			number: 10,
-    			price: 10.0,
+    			amount: 10.0,
     			time: "2019-03-30 12:45",
     			status: "已完成"
     		},{
@@ -181,7 +181,7 @@ export default {
     			avatar: 'images/temp-avatar.png',
     			product: "连麦-半小时",
     			number: 10,
-    			price: 10.0,
+    			amount: 10.0,
     			time: "2019-03-30 12:45",
     			status: "已完成"
     		}],
@@ -191,7 +191,9 @@ export default {
     			number: 20,
     			wchat: "15099999999",
     			remark: "备注一下"
-    		}
+            },
+            allOrders: [],
+            type: -1,
     	}
     },
     methods: {
@@ -199,6 +201,24 @@ export default {
     		this.activeTab = index
     	},
     	showDetail (item, index){
+            console.log(item, index);
+            this.$http({
+                method: 'GET', 
+                url: `api/v1/order/?id=${item.id}`, 
+                showLoading: true
+            }).then(res => {
+                // 0 => 店员
+                // 1 => 用户
+                this.type = res.type
+                this.dataList = res.data
+                this.dataList.forEach(data => {
+                    this.siteUtils.getImgOSS(data.avatar).then(res => {
+                        data.avatar = res
+                    })
+                });
+            }, error => {
+                console.log(error)
+            })
     		this.modalVisible = true
     	},
     	editAction (e){
@@ -208,6 +228,28 @@ export default {
     	payAction (e){
             e.preventDefault()
             this.modalVisible = false
+        },
+        toLocalTime(timestamp) {
+            return this.siteUtils.timestamp2datetime(timestamp)
+        },
+        getOrder () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/order/list/', 
+                showLoading: true
+            }).then(res => {
+                // 0 => 店员
+                // 1 => 用户
+                this.type = res.type
+                this.dataList = res.data
+                this.dataList.forEach(data => {
+                    this.siteUtils.getImgOSS(data.avatar).then(res => {
+                        data.avatar = res
+                    })
+                });
+            }, error => {
+                console.log(error)
+            })
         },
         fixScroll () {
             setTimeout(()=>{
@@ -220,6 +262,7 @@ export default {
     	this.setTitle('查看订单')
 	},
 	mounted(){
+        this.getOrder()
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){

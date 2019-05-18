@@ -92,14 +92,13 @@ export default{
 	},
 	//时间戳转时间
 	timestamp2datetime(timestamp){
-		var time = new Date(timestamp);
+		var time = new Date(timestamp * 1000);
 		var y = time.getFullYear();
 		var m = time.getMonth()+1;
 		var d = time.getDate();
 		var h = time.getHours();
 		var mm = time.getMinutes();
-		var s = time.getSeconds();
-		return y+'-'+formatNum(m)+'-'+formatNum(d)+' '+formatNum(h)+':'+formatNum(mm)+':'+formatNum(s);
+		return y+'-'+formatNum(m)+'-'+formatNum(d)+' '+formatNum(h)+':'+formatNum(mm);
 	},
 	//时间戳转日期
 	formatDate(date){
