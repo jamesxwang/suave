@@ -128,7 +128,7 @@
                 <label class="label">语音预览：</label>
                 <div class="flex-1">
                     <audio id="audioPreview" :src="regData.audio" v-show="false"></audio>
-                    <button id="playAudioBtn" class="btn small round" @click="playAudio()">
+                    <button id="playAudioBtn" class="btn small round" @click.stop.prevent="playAudio()">
                         <i class="iconfont icon-horn"></i>
                     </button>
                 </div>
