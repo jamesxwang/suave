@@ -5,11 +5,11 @@
 	<div class="page-order">
 		<div class="order-tab-wrap">
 			<div class="order-tab flex v-c">
-				<div v-if="type==0" class="item flex-1" :class="[{'active':type==0 || activeTab==0}]" @click="switchTab(0)">我的订单</div>
-				<div v-if="type==1" class="item flex-1" :class="{'active':type==1|| activeTab==1}" @click="switchTab(1)">我的接单</div>
+				<div class="item flex-1" :class="[{'active': activeTab==0}]" @click="switchTab(0)">我的订单</div>
+				<div v-if="type==1" class="item flex-1" :class="{'active': activeTab==1}" @click="switchTab(1)">我的接单</div>
 			</div>
 		</div>
-		<ul class="order-list">
+		<ul v-if="activeTab ==0" class="order-list">
 			<li class="order-item flex" v-for="(item,i) in dataList" :key="i" @click="showDetail(item,i)">
 				<img class="avatar" :src="item.avatar" :alt="item.name">
 				<div class="details flex-1">
@@ -26,8 +26,24 @@
 				</div>
 			</li>
 		</ul>
-		<!-- 下单弹窗 start -->
-        <modal title="下单" @close="modalVisible=false" v-show="modalVisible">
+        <ul v-if="activeTab ==1" class="order-list">
+			<li class="order-item flex" v-for="(item,i) in myOrderList" :key="i" @click="showDetail(item,i)">
+				<div class="details flex-1">
+					<div class="flex v-c mb-10">
+						<p class="name flex-1">类型：{{item.renew}} - {{item.type}}</p>
+						<p class="color-red">￥{{item.amount}}</p>
+					</div>
+					<p>产品：{{item.product}}</p>
+					<p>数量：{{item.number}}</p>
+					<div class="flex">
+						<p class="flex-1">时间：{{ toLocalTime(item.time) }}</p>
+						<p class="color-primary">{{item.status}}</p>
+					</div>
+				</div>
+			</li>
+		</ul>
+		<!-- 订单弹窗 start -->
+        <modal title="订单" @close="modalVisible=false" v-show="modalVisible">
             <form class="form-blk">
                 <div class="form-line">
                     <label class="label">订 &nbsp;单 &nbsp;号:</label>
@@ -129,6 +145,7 @@ export default {
     		activeTab: 0,
             modalVisible: false,
             dataList: [],
+            myOrderList: [],
             allProductType: [],
             orderDetail: {},
             timeList: [],
@@ -147,8 +164,8 @@ export default {
     	switchTab (index) {
     		this.activeTab = index
     	},
-    	showDetail (item, index){
-            if (!item.detail)
+    	showDetail (item, index){            
+            if (!item.detail || !item.id)
                 return
             this.getDetail(item.id).then(res => {
                 this.orderDetail = res.data
@@ -156,6 +173,7 @@ export default {
             })
         },
         getDetail (id) {
+            console.log(id);
             return new Promise((resolve, reject) => {
                 this.$http({
                     method: 'GET', 
@@ -197,6 +215,7 @@ export default {
                 // 1 => 用户
                 this.type = res.type
                 this.dataList = res.data
+                this.myOrderList = res.data1
                 for (let i = 0; i < this.dataList.length ; ++i) {
                     if (!this.dataList[i].avatar) {
                         this.dataList[i].avatar = 'images/suave_logo.jpeg'
