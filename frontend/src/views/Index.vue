@@ -226,6 +226,8 @@ export default {
                     }
                     break;
             }
+            this.dataList = []
+            this.params.i = 0
             this.getAnchorList(this.params)
         },
         loadMore () {
