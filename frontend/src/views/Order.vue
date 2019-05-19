@@ -5,8 +5,8 @@
 	<div class="page-order">
 		<div class="order-tab-wrap">
 			<div class="order-tab flex v-c">
-				<div v-if="type==0" class="item flex-1" :class="{'active':type==0}">我的订单</div>
-				<div v-if="type==1" class="item flex-1" :class="{'active':type==1}">我的接单</div>
+				<div v-if="type==0" class="item flex-1" :class="[{'active':type==0 || activeTab==0}]" @click="switchTab(0)">我的订单</div>
+				<div v-if="type==1" class="item flex-1" :class="{'active':type==1|| activeTab==1}" @click="switchTab(1)">我的接单</div>
 			</div>
 		</div>
 		<ul class="order-list">
@@ -30,99 +30,84 @@
         <modal title="下单" @close="modalVisible=false" v-show="modalVisible">
             <form class="form-blk">
                 <div class="form-line">
-                    <label class="label">订&nbsp; 单 &nbsp;号：</label>
+                    <label class="label">订 &nbsp;单 &nbsp;号:</label>
                     <div class="flex-1">
-                        138490595742935677
+                        {{ orderDetail.id }}
                     </div>
                 </div>   
                 <div class="form-line">
                     <label class="label">订单状态：</label>
                     <div class="flex-1 color-red">
-                    	待付款
+                    	{{ orderDetail.status }}
                     </div>
                 </div>   
                 <div class="form-line">
                     <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
                     <div class="flex-1">
-                        若谷
+                        {{ orderDetail.anchor }}
                     </div>
                 </div>
                 <div class="form-line">
                     <label class="label">产品类型：</label>
                     <div class="flex-1">
-                        <div class="select">
-                        	<select v-model="orderForm.type">
-	                            <option value="1">产品类型1</option>
-	                            <option value="2">产品类型2</option>
-	                            <option value="3">产品类型3</option>
-	                            <option value="4">产品类型4</option>
-	                        </select>
-                        </div>	
+                        {{ orderDetail.product_type }}
                     </div>
                 </div>     
                 <div class="form-line">
                     <label class="label">时 &nbsp; &nbsp; &nbsp; 长：</label>
                     <div class="flex-1">
-                    	<div class="select">
-	                        <select v-model="orderForm.time">
-	                            <option value="1">时长1</option>
-	                            <option value="2">时长2</option>
-	                            <option value="3">时长3</option>
-	                            <option value="4">时长4</option>
-	                        </select>
-                    	</div>
+                        {{ orderDetail.product }}
                     </div>
                 </div>
                 <div class="form-line">
                     <label class="label">单 &nbsp; &nbsp; &nbsp; 价：</label>
                     <div class="flex-1">
-                        ￥288
+                        ￥{{ orderDetail.price }}
                     </div>
-                </div>      
+                </div>
                 <div class="form-line">
                     <label class="label">数 &nbsp; &nbsp; &nbsp; 量：</label>
-                    <div class="flex-1">
-                        <input class="ipt" type="tel" size="3" v-model.trim="orderForm.number">
+                    <div class="flex-1" >
+                        {{ orderDetail.number }}
                     </div>
                 </div>      
                 <div class="form-line">
                     <label class="label">联系微信：</label>
                     <div class="flex-1">
-                        <input class="ipt full" type="text" v-model.trim="orderForm.wchat">
+                        {{ orderDetail.wechat_id }}
                     </div>
                 </div>      
                 <div class="form-line">
                     <label class="label">备 &nbsp; &nbsp; &nbsp; 注：</label>
                     <div class="flex-1">
-                        <textarea v-model.trim="orderForm.remark"></textarea>
+                        {{ orderDetail.comment || '无' }}
                     </div>
                 </div>
                 <div class="price-infos">
                     <div class="item flex">
                         <p class="flex-1">原 &nbsp; &nbsp; &nbsp; 价：</p>
-                        <p>286.00</p>
+                        <p>${{ orderDetail.amount }}</p>
                     </div>
-                    <div class="item flex">
+                    <div class="item flex" v-if="false">
                         <p class="flex-1">折扣金额：</p>
                         <p>-90.00</p>
                     </div>
-                    <div class="item flex">
+                    <div class="item flex" v-if="false">
                         <p class="flex-1">实时汇率：</p>
-                        <p>9.00</p>
+                        <p>4.88</p>
                     </div>
                     <div class="total flex">
                         <p class="flex-1">总价：</p>
-                        <p class="color-red">￥457.00</p>
+                        <p class="color-red">￥{{ orderDetail.rmb_amount }}</p>
                     </div>
                 </div>
                 <hr class="splitter">
                 <div class="form-tip">
                     <h4>用户须知</h4>
-                    <p>1、温莎石斛的发号施令，回家吃点哈看看得见哈咯；</p>
-                    <p>2、和绿化回家，喝咖啡哈刘欢发放v 房间打开 v 好；</p>
+                    <p v-for="(line,i) in instructions" :key="i">{{ line }};</p>
                 </div>
-                <div class="form-btn text-right">
-                    <button type="button" class="btn btn-default small round mr-10" @click="editAction">确认修改</button>
+                <div class="form-btn text-right" v-if="orderDetail.modify">
+                    <button type="button" class="btn btn-default small round mr-10" @click="cancelAction(orderDetail.id)">取消订单</button>
                     <button type="button" class="btn btn-red small round" @click="payAction">去付款</button>
                 </div>
                 
@@ -143,56 +128,18 @@ export default {
     	return {
     		activeTab: 0,
             modalVisible: false,
-            allOrders: [],
-    		dataList: [{
-    			name: "若谷",
-    			avatar: 'images/temp-avatar.png',
-    			product: "连麦-半小时",
-    			number: 10,
-    			amount: 10.0,
-    			time: "2019-03-30 12:45",
-    			status: "待付款"
-    		},{
-    			name: "若谷",
-    			avatar: 'images/temp-avatar.png',
-    			product: "连麦-半小时",
-    			number: 10,
-    			amount: 10.0,
-    			time: "2019-03-30 12:45",
-    			status: "待接单"
-    		},{
-    			name: "若谷",
-    			avatar: 'images/temp-avatar.png',
-    			product: "连麦-半小时",
-    			number: 10,
-    			amount: 10.0,
-    			time: "2019-03-30 12:45",
-    			status: "已关闭"
-    		},{
-    			name: "若谷",
-    			avatar: 'images/temp-avatar.png',
-    			product: "连麦-半小时",
-    			number: 10,
-    			amount: 10.0,
-    			time: "2019-03-30 12:45",
-    			status: "已完成"
-    		},{
-    			name: "若谷",
-    			avatar: 'images/temp-avatar.png',
-    			product: "连麦-半小时",
-    			number: 10,
-    			amount: 10.0,
-    			time: "2019-03-30 12:45",
-    			status: "已完成"
-    		}],
+            dataList: [],
+            allProductType: [],
+            orderDetail: {},
+            timeList: [],
     		orderForm: {
-    			type: 1,
-    			time: 1,
-    			number: 20,
-    			wchat: "15099999999",
-    			remark: "备注一下"
+    			type: '',
+    			time: '',
+    			number: '',
+    			wchat: '',
+    			remark: ''
             },
-            allOrders: [],
+            instructions: [],
             type: -1,
     	}
     },
@@ -201,24 +148,37 @@ export default {
     		this.activeTab = index
     	},
     	showDetail (item, index){
-            console.log(item, index);
+            if (!item.detail)
+                return
+            this.getDetail(item.id).then(res => {
+                this.orderDetail = res.data
+    		    this.modalVisible = true
+            })
+        },
+        getDetail (id) {
+            return new Promise((resolve, reject) => {
+                this.$http({
+                    method: 'GET', 
+                    url: `api/v1/order/detail/?id=${id}`, 
+                    showLoading: true
+                }).then(res => {
+                    resolve(res)
+                }, error => {
+                    reject()
+                })
+            })
+        },
+        cancelAction (id) {
             this.$http({
-                method: 'GET', 
-                url: `api/v1/order/?id=${item.id}`, 
+                method: 'POST',
+                data: {id},
+                url: `api/v1/order/cancel/`, 
                 showLoading: true
             }).then(res => {
-                console.log(res);
-    		    this.modalVisible = true
-                
-            }, error => {
-                console.log(error)
+                this.$toast('取消成功')
+                this.modalVisible = false
             })
-    		this.modalVisible = true
-    	},
-    	editAction (e){
-    		this.$toast('修改成功')
-    		this.modalVisible = false
-    	},
+        },
     	payAction (e){
             e.preventDefault()
             this.modalVisible = false
@@ -236,11 +196,26 @@ export default {
                 // 1 => 用户
                 this.type = res.type
                 this.dataList = res.data
-                this.dataList.forEach(data => {
-                    this.siteUtils.getImgOSS(data.avatar).then(res => {
-                        data.avatar = res
-                    })
-                });
+                for (let i = 0; i < this.dataList.length ; ++i) {
+                    if (!this.dataList[i].avatar) {
+                        this.dataList[i].avatar = 'images/suave_logo.jpeg'
+                    } else {
+                        this.siteUtils.getImgOSS(this.dataList[i].avatar).then(res => {
+                            this.dataList[i].avatar = res
+                        })
+                    }
+                }
+            }, error => {
+                console.log(error)
+            })
+        },
+        getInstructions () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/platform/?tag=order-user-ack',
+                showLoading: true
+            }).then(result => {
+                this.instructions = result.data
             }, error => {
                 console.log(error)
             })
@@ -257,6 +232,7 @@ export default {
 	},
 	mounted(){
         this.getOrder()
+        this.getInstructions()
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){
