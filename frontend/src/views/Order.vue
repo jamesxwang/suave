@@ -175,6 +175,7 @@ export default {
                 url: `api/v1/order/cancel/`, 
                 showLoading: true
             }).then(res => {
+                this.getOrder()
                 this.$toast('取消成功')
                 this.modalVisible = false
             })

@@ -63,6 +63,7 @@
                 </router-link>
             </li>
         </ul>
+        <div id="loadMore" class="loadMore">加载中...</div>
 	</div>
 </template>
 
@@ -220,12 +221,43 @@ export default {
             }
             this.getAnchorList(this.params)
         },
+        loadMore () {
+            console.log(this.getClientHeight());
+            console.log(this.getScrollHeight());
+
+            const $loadMore = document.getElementById('loadMore')
+            document.getElementsByClassName('page-index')[0].onscroll = function() {
+                console.log(this.getClientHeight());
+                console.log(this.getScrollHeight());
+                
+                if (this.getClientHeight() == this.getScrollHeight()) {
+                    alert('bottom')
+                    //get
+                }
+            };
+        },
+        getClientHeight() { 
+            var clientHeight = 0; 
+            if (document.body.clientHeight && document.documentElement.clientHeight) { 
+                clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight); 
+            } 
+            else { 
+                clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight); 
+            } 
+            return clientHeight; 
+        },
+        getScrollHeight() { 
+            return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight); 
+        }
+
     },
     created () {
     	this.setTitle('Suave')
     },
 	mounted(){
         this.getAnchorList()
+        this.loadMore()
+        
     }
 }
 </script>
