@@ -1,9 +1,9 @@
 <template>
-	<div class="page-app">
+	<div class="page-app" @scroll="onScroll">
 		<keep-alive>
             <router-view v-if="$route.meta.keepAlive"></router-view>
         </keep-alive>
-        <router-view v-if="!$route.meta.keepAlive" :allGender="allGender" :allLevel="allLevel" :allCities="allCities"></router-view>
+        <router-view v-if="!$route.meta.keepAlive" :allGender="allGender" :allLevel="allLevel" :allCities="allCities" :pageIndex="pageIndex"></router-view>
 
         <Footer @placeOrder="placeOrder"></Footer>
         <!-- 随机下单弹窗 start -->
@@ -109,11 +109,23 @@ export default {
             timeList:[],
             unitPrice: 0,
             rate: 0,
+            pageIndex: 0,
     	}
     },
     methods: {
     	placeOrder () {
             this.randomModalVisible = true
+        },
+        onScroll ({ target: { scrollTop, clientHeight, scrollHeight }}) {
+            if (scrollTop + clientHeight >= scrollHeight) {
+                try {
+                    this.$children[0].loadMore()
+                    this.$children[1].loadMore()
+                    this.$children[2].loadMore()
+                } catch (error) {
+                    // ignore
+                }
+            }
         },
         submitOrder (e) {
             e.preventDefault()
