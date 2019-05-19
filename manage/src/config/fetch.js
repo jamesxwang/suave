@@ -22,7 +22,7 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 			credentials: 'include',
 			method: type,
 			headers: {
-				'Accept': 'application/json',
+				// 'Accept': 'application/json',
 				'Content-Type': 'application/json',
 				'X-API-KEY': API_KEY
 			},
@@ -34,14 +34,17 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 			Object.defineProperty(requestConfig, 'body', {
 				value: JSON.stringify(data)
 			})
+			console.log(requestConfig);
+			
 		}
 		
 		try {
 			const response = await fetch(url, requestConfig);
 			console.log(response);
-			
-			const responseJson = await response.json();
-			return responseJson
+			return response
+
+			// const responseJson = await response.json();
+			// return responseJson
 		} catch (error) {
 			throw new Error(error)
 		}
