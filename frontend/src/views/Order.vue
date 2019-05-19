@@ -15,7 +15,7 @@
 				<div class="details flex-1">
 					<div class="flex v-c mb-10">
 						<p class="name flex-1">接单店员：{{item.anchor}}</p>
-						<p class="color-red">￥{{item.amount}}/起</p>
+						<p class="color-red">￥{{item.amount}}</p>
 					</div>
 					<p>产品：{{item.product}}</p>
 					<p>数量：{{item.number}}</p>

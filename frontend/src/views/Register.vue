@@ -24,6 +24,7 @@
                 <div class="flex-1">
                 	<div class="select">
                 		<select v-model="regData.gender" >
+                            <option value=""></option>
 	                        <option v-for="(gender,i) in allGender" :key="i" :value="gender.id">{{ gender.gender }}</option>
 	                    </select>
                 	</div>
@@ -67,6 +68,7 @@
                 <div class="flex-1">
                 	<div class="select">
                 		<select v-model="regData.experience" >
+                            <option value=""></option>
                             <option :value="true">有</option>
                             <option :value="false">无</option>
 	                    </select>
@@ -154,6 +156,7 @@
 <script>
 import { Promise, reject, resolve } from 'q';
 let OSS = require('ali-oss')
+let wx = require('weixin-js-sdk')
 let codeTimer = null
 export default {
 	name: 'Appoint',
