@@ -9,6 +9,7 @@
 				<div v-if="type==1" class="item flex-1" :class="{'active': activeTab==1}" @click="switchTab(1)">我的接单</div>
 			</div>
 		</div>
+        <!-- 我的订单 -->
 		<ul v-if="activeTab ==0" class="order-list">
 			<li class="order-item flex" v-for="(item,i) in dataList" :key="i" @click="showDetail(item,i)">
 				<img class="avatar" :src="item.avatar" :alt="item.name">
@@ -26,8 +27,9 @@
 				</div>
 			</li>
 		</ul>
+        <!-- 我的接单 -->
         <ul v-if="activeTab ==1" class="order-list">
-			<li class="order-item flex" v-for="(item,i) in myOrderList" :key="i" @click="showDetail(item,i)">
+			<li class="order-item flex" v-for="(item,i) in myOrderList" :key="i" @click="showMyOrder(item,i)">
 				<div class="details flex-1">
 					<div class="flex v-c mb-10">
 						<p class="name flex-1">类型：{{item.renew}} - {{item.type}}</p>
@@ -57,10 +59,16 @@
                     	{{ orderDetail.status }}
                     </div>
                 </div>   
-                <div class="form-line">
+                <div v-if="orderDetail.anchor" class="form-line">
                     <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
                     <div class="flex-1">
                         {{ orderDetail.anchor }}
+                    </div>
+                </div>
+                <div v-if="orderDetail.type && orderDetail.renew" class="form-line">
+                    <label class="label">订单类型：</label>
+                    <div class="flex-1">
+                        {{ orderDetail.renew }} - {{ orderDetail.type }}
                     </div>
                 </div>
                 <div class="form-line">
@@ -112,13 +120,19 @@
                         <p class="flex-1">实时汇率：</p>
                         <p>4.88</p>
                     </div>
+                    <div v-if="orderDetail.my_amount" class="item flex">
+                        <p class="flex-1">用户实付：</p>
+                        <p>￥{{ orderDetail.rmb_amount }}</p>
+                    </div>
                     <div class="total flex">
-                        <p class="flex-1">总价：</p>
-                        <p class="color-red">￥{{ orderDetail.rmb_amount }}</p>
+                        <p v-if="orderDetail.my_amount" class="flex-1">预计收入：</p>
+                        <p v-else class="flex-1">总价：</p>
+                        <p v-if="orderDetail.my_amount" class="color-red">￥{{ orderDetail.my_amount }}</p>
+                        <p v-else class="color-red">￥{{ orderDetail.rmb_amount }}</p>
                     </div>
                 </div>
-                <hr class="splitter">
-                <div class="form-tip">
+                <hr class="splitter" v-if="!orderDetail.my_amount">
+                <div class="form-tip" v-if="!orderDetail.my_amount">
                     <h4>用户须知</h4>
                     <p v-for="(line,i) in instructions" :key="i">{{ line }};</p>
                 </div>
@@ -173,7 +187,6 @@ export default {
             })
         },
         getDetail (id) {
-            console.log(id);
             return new Promise((resolve, reject) => {
                 this.$http({
                     method: 'GET', 
@@ -184,6 +197,27 @@ export default {
                 }, error => {
                     reject()
                 })
+            })
+        },
+        getMyOrder (id) {
+            return new Promise((resolve, reject) => {
+                this.$http({
+                    method: 'GET', 
+                    url: `api/v1/order/detail/receive/?id=${id}`, 
+                    showLoading: true
+                }).then(res => {
+                    resolve(res)
+                }, error => {
+                    reject()
+                })
+            })
+        },
+        showMyOrder (item, index) {
+            if (!item.detail || !item.id)
+                return
+            this.getMyOrder(item.id).then(res => {
+                this.orderDetail = res.data
+    		    this.modalVisible = true
             })
         },
         cancelAction (id) {
