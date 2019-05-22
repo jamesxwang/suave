@@ -1,20 +1,46 @@
+# Suave 后台管理系统
 
-## 技术栈
+English | [简体中文](./README-zh.md)
 
-vue2 + vuex + vue-router + webpack + ES6/7 + less + element-ui
-
-
-## 项目运行
+## Build Setup
 
 
+```bash
+# install dependency
+npm install
+
+# develop
+npm run dev
 ```
-npm install 或 yarn(推荐)
 
-npm run dev (访问线上后台系统)
+This will automatically open http://localhost:8080
 
-npm run local (访问本地后台系统，需运行node-elm后台系统)
+## Build
 
+```bash
+# build for test environment
+npm run build:stage
 
-访问: http://localhost:8002
-
+# build for production environment
+npm run build:prod
 ```
+
+## Advanced
+
+```bash
+# preview the release environment effect
+npm run preview
+
+# preview the release environment effect + static resource analysis
+npm run preview -- --report
+
+# code format check
+npm run lint
+
+# code format check and auto fix
+npm run lint -- --fix
+```
+
+## Extra
+
+If you want router permission && generate menu by user roles , you can use this branch [permission-control](https://github.com/PanJiaChen/vue-admin-template/tree/permission-control)
