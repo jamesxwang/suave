@@ -10,7 +10,7 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-form label-position="left" inline class="table-expand">
-            <el-carousel indicator-position="outside" type="card" height="500px">
+            <el-carousel indicator-position="outside" type="card" height="700px">
               <el-carousel-item v-for="img in props.row.image" :key="img">
                 <img :src="getImage(img)">
               </el-carousel-item>
