@@ -16,7 +16,10 @@
               </el-carousel-item>
             </el-carousel>
             <el-form-item label="语音">
-              <span>{{ props.row.audio }}</span>
+              <audio controls>
+                <source :src="getAudio(props.row.audio)" type="audio/mpeg">
+                Your browser does not support the audio element.
+              </audio>
             </el-form-item>
             <el-form-item label="申请时间">
               <span>{{ props.row.apply_date }}</span>
@@ -101,7 +104,7 @@
 <script>
 import { MessageBox, Message } from 'element-ui'
 import { getUnauditList, auditPass, auditReject, getAllLevel } from '@/api/audit'
-import { getImageURL } from '@/utils/ali-oss'
+import { getImageURL, getAudioURL } from '@/utils/ali-oss'
 
 export default {
   name: 'Anchor',
@@ -184,6 +187,9 @@ export default {
     },
     getImage(name) {
       return getImageURL(name)
+    },
+    getAudio(name) {
+      return getAudioURL(name)
     }
   }
 }
@@ -214,11 +220,5 @@ export default {
     width: 100%;
     height: auto;
   }
-  // &:nth-child(2n) {
-  //   background-color: #99a9bf;
-  // }
-  // &:nth-child(2n+1) {
-  //   background-color: #d3dce6;
-  // }
 }
 </style>
