@@ -10,9 +10,9 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-form label-position="left" inline class="table-expand">
-            <el-carousel indicator-position="outside" type="card">
-              <el-carousel-item v-for="item in 4" :key="item">
-                <h3>{{ item }}</h3>
+            <el-carousel indicator-position="outside" type="card" height="500px">
+              <el-carousel-item v-for="img in props.row.image" :key="img">
+                <img :src="getImage(img)">
               </el-carousel-item>
             </el-carousel>
             <el-form-item label="语音">
@@ -56,9 +56,6 @@
               <span v-if="props.row.tags.length">{{ props.row.tags }}</span>
               <span v-else>无</span>
             </el-form-item>
-            <!-- <el-form-item label="照片">
-              <span>{{ props.row.image }}</span>
-            </el-form-item> -->
             <el-row class="audit-btn-group">
               <el-button type="danger" @click="confirmAudit(false, props.row.id)">审核失败</el-button>
               <el-button type="success" @click="confirmAudit(true, props.row.id)">审核通过</el-button>
@@ -102,8 +99,9 @@
 </template>
 
 <script>
-import { getUnauditList, auditPass, auditReject, getAllLevel } from '@/api/audit'
 import { MessageBox, Message } from 'element-ui'
+import { getUnauditList, auditPass, auditReject, getAllLevel } from '@/api/audit'
+import { getImageURL } from '@/utils/ali-oss'
 
 export default {
   name: 'Anchor',
@@ -183,6 +181,9 @@ export default {
         })
         this.dialogFormVisible = false
       })
+    },
+    getImage(name) {
+      return getImageURL(name)
     }
   }
 }
@@ -209,18 +210,15 @@ export default {
   float: right;
 }
 .el-carousel__item {
-  h3 {
-    color: #475669;
-    font-size: 18px;
-    opacity: 0.75;
-    line-height: 300px;
-    margin: 0;
+  img {
+    width: 100%;
+    height: auto;
   }
-  &:nth-child(2n) {
-    background-color: #99a9bf;
-  }
-  &:nth-child(2n+1) {
-    background-color: #d3dce6;
-  }
+  // &:nth-child(2n) {
+  //   background-color: #99a9bf;
+  // }
+  // &:nth-child(2n+1) {
+  //   background-color: #d3dce6;
+  // }
 }
 </style>

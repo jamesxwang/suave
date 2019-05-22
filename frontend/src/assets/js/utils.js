@@ -241,7 +241,7 @@ export default{
 				let blobURL = this.getImageURL(result.content)                    
 				resolve(blobURL)
 			}).catch((err) => {
-				reject()
+				reject(err)
 			});
 		})
 	},
