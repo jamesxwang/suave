@@ -1,0 +1,17 @@
+cd $WORKSPACE/frontend
+sudo npm install
+sudo npm run build
+
+cd $WORKSPACE/manage
+sudo npm install
+sudo npm run build:prod
+
+cd $WORKSPACE
+sudo docker build -t suave_frontend:$BUILD_NUMBER .
+if sudo docker ps -a | grep suave_frontend; then
+	sudo docker ps -a | grep suave_frontend | awk '{print $1}' | xargs sudo docker rm -f
+fi;
+sudo docker run -d -p 80:80 --name suave_frontend_$BUILD_NUMBER suave_frontend:$BUILD_NUMBER
+#if sudo docker images | grep suave_frontend; then
+#	sudo docker rmi $(sudo docker images -q)
+#fi;
