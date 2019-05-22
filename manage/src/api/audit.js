@@ -7,6 +7,13 @@ export function getUnauditList() {
   })
 }
 
+export function getAllLevel() {
+  return request({
+    url: 'info/level/',
+    method: 'get'
+  })
+}
+
 export function auditPass(data) {
   return request({
     url: 'anchor/apply/audit/pass/',

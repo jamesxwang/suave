@@ -3,9 +3,7 @@ module.exports = {
   configureWebpack: {
     
   },
-  chainWebpack: config => {
-
-  },
+  // chainWebpack: config => {},
   productionSourceMap: false,
   publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   devServer: { 
