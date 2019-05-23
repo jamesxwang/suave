@@ -46,6 +46,7 @@ service.interceptors.response.use(
    */
   response => {
     const res = response
+    console.log('RESPONSE:', res) // for debug
 
     // if the custom code is not 200, it is judged as an error.
     if (res.status !== 200) {
@@ -54,19 +55,19 @@ service.interceptors.response.use(
         type: 'error',
         duration: 5 * 1000
       })
-
-      if (res.status === 400 || res.code === 500) {
-        // to re-login
-        MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
-          confirmButtonText: '重新登录',
-          cancelButtonText: '取消登录',
-          type: 'warning'
-        }).then(() => {
-          store.dispatch('user/resetToken').then(() => {
-            location.reload()
-          })
+      console.log('RESPONSE:', res) // for debug
+      // if (res.status === 700 || res.status === 400 || res.code === 500) {
+      // to re-login
+      MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消登录',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
         })
-      }
+      })
+      // }
 
       return Promise.reject(res.message || 'error')
     } else {

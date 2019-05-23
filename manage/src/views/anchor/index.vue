@@ -6,7 +6,8 @@
       element-loading-text="加载中"
       fit
       highlight-current-row
-      style="width: 100%">
+      style="width: 100%"
+    >
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-form label-position="left" inline class="table-expand">
@@ -24,7 +25,7 @@
             <el-form-item label="申请时间">
               <span>{{ props.row.apply_date }}</span>
             </el-form-item>
-             <el-form-item label="昵称">
+            <el-form-item label="昵称">
               <span>{{ props.row.nickname }}</span>
             </el-form-item>
             <el-form-item label="生日">
@@ -66,22 +67,10 @@
           </el-form>
         </template>
       </el-table-column>
-      <el-table-column
-        label="昵称"
-        prop="nickname">
-      </el-table-column>
-      <el-table-column
-        label="性别"
-        prop="gender">
-      </el-table-column>
-      <el-table-column
-        label="城市"
-        prop="city">
-      </el-table-column>
-      <el-table-column
-        label="职位"
-        prop="occupation">
-      </el-table-column>
+      <el-table-column label="昵称" prop="nickname" />
+      <el-table-column label="性别" prop="gender" />
+      <el-table-column label="城市" prop="city" />
+      <el-table-column label="职位" prop="occupation" />
     </el-table>
 
     <!-- 确认弹窗 -->
@@ -89,13 +78,13 @@
       <el-form :model="form">
         <el-form-item label="店员等级设定：" :label-width="formLabelWidth">
           <el-select v-model="form.level" placeholder="请选择店员等级">
-            <el-option v-for="(level,i) in allLevels" :key="i" :label="level.name" :value="level.id"></el-option>
+            <el-option v-for="(level,i) in allLevels" :key="i" :label="level.name" :value="level.id" />
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="pass()">确 定</el-button>
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="pass()">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -145,9 +134,9 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          auditReject({id}).then(response => {
+          auditReject({ id }).then(response => {
             const res = response.data.data
-            this.list.forEach((element,index) => {
+            this.list.forEach((element, index) => {
               if (element.id === res.id) {
                 this.list.splice(index, 1)
               }
@@ -172,7 +161,7 @@ export default {
       }
       auditPass(this.form).then(response => {
         const res = response.data.data
-        this.list.forEach((element,index) => {
+        this.list.forEach((element, index) => {
           if (element.id === res.id) {
             this.list.splice(index, 1)
           }

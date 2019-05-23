@@ -26,6 +26,7 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
+      console.log('VUEX STORE', store.getters) // for debug
       const hasGetUserInfo = store.getters.name
       if (hasGetUserInfo) {
         next()
