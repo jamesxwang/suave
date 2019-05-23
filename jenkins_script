@@ -1,3 +1,6 @@
+##############
+## FRONTEND ##
+##############
 cd $WORKSPACE/frontend
 sudo npm install
 sudo npm run build
@@ -15,3 +18,14 @@ sudo docker run -d -p 80:80 --name suave_frontend_$BUILD_NUMBER suave_frontend:$
 #if sudo docker images | grep suave_frontend; then
 #	sudo docker rmi $(sudo docker images -q)
 #fi;
+
+
+##############
+## BACKEND ##
+##############
+cd $WORKSPACE
+sudo docker build -t suave_backend:$BUILD_NUMBER .
+if sudo docker ps -a | grep suave_backend; then
+	sudo docker ps -a | grep suave_backend | awk '{print $1}' | xargs sudo docker rm -f
+fi;
+sudo docker run -d -p 8081:8080 --name suave_backend_$BUILD_NUMBER --mount type=bind,source=$WORKSPACE,target=/code suave_backend:$BUILD_NUMBER
