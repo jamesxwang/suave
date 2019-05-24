@@ -130,12 +130,13 @@ export default {
     handleDelete(index, row) {
       console.log(index, row)
       const id = row.id
-      removeAdmin({ id }).then(response =>  {
-        if (!response)
+      removeAdmin({ id }).then(response => {
+        if (!response) {
           return
+        }
         this.tableData.splice(index, 1)
         Message({
-          message: '停用管理员“' + nickname + '”成功',
+          message: '停用管理员“' + row.nickname + '”成功',
           type: 'success',
           duration: 5 * 1000
         })
