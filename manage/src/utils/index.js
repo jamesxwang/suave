@@ -104,3 +104,34 @@ export function param2Obj(url) {
       '"}'
   )
 }
+
+/**
+ * @param {number} timestamp
+ * @returns {string}
+ */
+export function timestamp2datetime(timestamp) {
+  var time = new Date(timestamp * 1000)
+  var y = time.getFullYear()
+  var m = time.getMonth() + 1
+  var d = time.getDate()
+  var h = time.getHours()
+  var mm = time.getMinutes()
+  return y + '-' + formatNum(m) + '-' + formatNum(d) + ' ' + formatNum(h) + ':' + formatNum(mm)
+}
+
+/**
+ * @param {number} date
+ * @returns {string}
+ */
+export function formatDate(date) {
+  var time = new Date(date * 1000)
+  var y = time.getFullYear()
+  var m = time.getMonth() + 1
+  var d = time.getDate()
+  return y + '-' + formatNum(m) + '-' + formatNum(d)
+}
+
+function formatNum(m) {
+  m = Number(m)
+  return m < 10 ? '0' + m : m
+}
