@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-text">Welcome, {{ name }}!</div>
+    <div class="dashboard-text">管理员权限: <span v-for="role in roles" :key="role">{{ role }}</span></div>
   </div>
 </template>
 
@@ -11,7 +12,8 @@ export default {
   name: 'Dashboard',
   computed: {
     ...mapGetters([
-      'name'
+      'name',
+      'roles'
     ])
   }
 }

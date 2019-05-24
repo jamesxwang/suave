@@ -17,7 +17,7 @@ import Layout from '@/layout'
  * redirect: noRedirect           if set noRedirect will no redirect in the breadcrumb
  * name:'router-name'             the name is used by <keep-alive> (must set!!!)
  * meta : {
-    roles: ['admin','editor']    control the page roles (you can set multiple roles)
+    roles: ['super','normal']    control the page roles (you can set multiple roles)
     title: 'title'               the name show in sidebar and breadcrumb (recommend set)
     icon: 'svg-name'             the icon show in the sidebar
     breadcrumb: false            if set false, the item will hidden in breadcrumb(default is true)
@@ -55,27 +55,27 @@ export const constantRoutes = [
     }]
   },
 
-  {
-    path: '/manage',
-    component: Layout,
-    redirect: '/manage/anchor',
-    name: 'Manage',
-    meta: { title: '人员管理', icon: 'manage' },
-    children: [
-      {
-        path: 'anchor',
-        name: 'Anchor',
-        component: () => import('@/views/anchor/index'),
-        meta: { title: '店员审核', icon: 'user' }
-      },
-      {
-        path: 'admin',
-        name: 'admin',
-        component: () => import('@/views/admin/index'),
-        meta: { title: '管理员设置', icon: 'admin' }
-      }
-    ]
-  },
+  // {
+  //   path: '/manage',
+  //   component: Layout,
+  //   redirect: '/manage/anchor',
+  //   name: 'Manage',
+  //   meta: { title: '人员管理', icon: 'manage' },
+  //   children: [
+  //     {
+  //       path: 'anchor',
+  //       name: 'Anchor',
+  //       component: () => import('@/views/anchor/index'),
+  //       meta: { title: '店员审核', icon: 'user' }
+  //     },
+  //     {
+  //       path: 'admin',
+  //       name: 'admin',
+  //       component: () => import('@/views/admin/index'),
+  //       meta: { title: '管理员设置', icon: 'admin' }
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: '/example',
@@ -181,8 +181,38 @@ export const constantRoutes = [
   //   ]
   // },
 
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+]
+
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+ */
+export const asyncRoutes = [
+  {
+    path: '/manage',
+    component: Layout,
+    redirect: '/manage/anchor',
+    name: 'Manage',
+    meta: { title: '人员管理', icon: 'manage', roles: ['super', 'normal'] },
+    children: [
+      {
+        path: 'anchor',
+        name: 'Anchor',
+        component: () => import('@/views/anchor/index'),
+        meta: { title: '店员审核', icon: 'user', roles: ['super', 'normal'] }
+      },
+
+      {
+        path: 'admin',
+        name: 'admin',
+        component: () => import('@/views/admin/index'),
+        meta: { title: '管理员设置', icon: 'admin', roles: ['super'] }
+      },
+
+      // 404 page must be placed at the end !!!
+      { path: '*', redirect: '/404', hidden: true }
+    ]
+  }
 ]
 
 const createRouter = () => new Router({

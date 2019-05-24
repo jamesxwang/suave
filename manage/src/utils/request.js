@@ -46,7 +46,6 @@ service.interceptors.response.use(
    */
   response => {
     const res = response
-    console.log('RESPONSE:', res) // for debug
 
     // if the custom code is not 200, it is judged as an error.
     if (res.status !== 200) {
@@ -55,8 +54,36 @@ service.interceptors.response.use(
         type: 'error',
         duration: 5 * 1000
       })
-      console.log('RESPONSE:', res) // for debug
-      // if (res.status === 700 || res.status === 400 || res.code === 500) {
+
+      return Promise.reject(res.message || 'error')
+    } else {
+      return res
+    }
+  },
+  error => {
+    if (error.response && error.response.status && error.response.status === 400) {
+      Message({
+        message: '用户名或密码错误，请重新输入',
+        type: 'error',
+        duration: 5 * 1000
+      })
+    } else if (error.response && error.response.status && error.response.status === 500) {
+      // Message({
+      //   message: '对不起，服务器出现异常',
+      //   type: 'error',
+      //   duration: 5 * 1000
+      // })
+      // to re-login
+      MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
+        confirmButtonText: '确认',
+        // cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
+        })
+      })
+    } else if (error.response && error.response.status && error.response.status === 700) {
       // to re-login
       MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
         confirmButtonText: '重新登录',
@@ -67,21 +94,15 @@ service.interceptors.response.use(
           location.reload()
         })
       })
-      // }
-
-      return Promise.reject(res.message || 'error')
     } else {
-      return res
+      console.log('ERROR: ' + error) // for debug
+      Message({
+        message: error.message,
+        type: 'error',
+        duration: 5 * 1000
+      })
+      return Promise.reject(error)
     }
-  },
-  error => {
-    console.log('err' + error) // for debug
-    Message({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
-    return Promise.reject(error)
   }
 )
 
