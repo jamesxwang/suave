@@ -13,3 +13,19 @@ export function getAdminType() {
     method: 'get'
   })
 }
+
+export function addAdmin(data) {
+  return request({
+    url: 'admin/user/',
+    method: 'POST',
+    data
+  })
+}
+
+export function removeAdmin(data) {
+  return request({
+    url: 'admin/user/remove/',
+    method: 'POST',
+    data
+  })
+}

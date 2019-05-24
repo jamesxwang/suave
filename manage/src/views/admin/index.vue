@@ -20,6 +20,14 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="昵称"
+        min-width="140"
+      >
+        <template slot-scope="scope">
+          <span>{{ scope.row.nickname }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
         label="角色"
         min-width="140"
       >
@@ -68,7 +76,7 @@
             type="danger"
             @click="handleDelete(scope.$index, scope.row)"
           >
-            删除
+            停用
           </el-button>
         </template>
       </el-table-column>
@@ -78,14 +86,14 @@
       class="delete-all-btn"
       @click="handleDeleteAll"
     >
-      批量删除
+      批量停用
     </el-button>
   </div>
 </template>
 
 <script>
 import { Message } from 'element-ui'
-import { getAllAdmin } from '@/api/admin'
+import { getAllAdmin, removeAdmin } from '@/api/admin'
 import { formatDate } from '@/utils/index'
 
 export default {
@@ -122,7 +130,15 @@ export default {
     },
     handleDelete(index, row) {
       console.log(index, row)
-      return this.developing()
+      const id = row.id
+      removeAdmin({ id }).then(response =>  {
+        this.tableData.splice(index, 1)
+        Message({
+          message: '停用管理员“' + nickname + '”成功',
+          type: 'success',
+          duration: 5 * 1000
+        })
+      })
     },
     handleDeleteAll(index, row) {
       console.log(index, row)
@@ -145,6 +161,7 @@ export default {
 <style lang="scss" scoped>
 .add-admin-btn {
   float: right;
+  margin-bottom: 2em;
 }
 .delete-all-btn {
   margin-top: 2em;
