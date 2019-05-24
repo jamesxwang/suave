@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-button class="add-admin-btn" @click="handleAddNew" type="primary">新增管理员</el-button>
+    <el-button class="add-admin-btn" type="primary" @click="handleAddNew">新增管理员</el-button>
     <el-table
       v-loading="tableLoading"
       :data="tableData"
@@ -73,12 +73,18 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-button class="delete-all-btn" @click="handleDeleteAll" plain>批量删除</el-button>
+    <el-button
+      plain
+      class="delete-all-btn"
+      @click="handleDeleteAll"
+    >
+      批量删除
+    </el-button>
   </div>
 </template>
 
 <script>
-import { MessageBox, Message } from 'element-ui'
+import { Message } from 'element-ui'
 import { getAllAdmin } from '@/api/admin'
 import { formatDate } from '@/utils/index'
 
@@ -107,20 +113,20 @@ export default {
       return formatDate(timestamp)
     },
     handleAddNew(index, row) {
-      return this.developing()
       console.log(index, row)
+      return this.developing()
     },
     handleEdit(index, row) {
-      return this.developing()
       console.log(index, row)
+      return this.developing()
     },
     handleDelete(index, row) {
-      return this.developing()
       console.log(index, row)
+      return this.developing()
     },
     handleDeleteAll(index, row) {
-      return this.developing()
       console.log(index, row)
+      return this.developing()
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
