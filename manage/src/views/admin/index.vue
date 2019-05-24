@@ -112,7 +112,6 @@ export default {
     fetchData() {
       this.tableLoading = true
       getAllAdmin().then(response => {
-        console.log(response.data.data)
         this.tableData = response.data.data
         this.tableLoading = false
       })
@@ -132,6 +131,8 @@ export default {
       console.log(index, row)
       const id = row.id
       removeAdmin({ id }).then(response =>  {
+        if (!response)
+          return
         this.tableData.splice(index, 1)
         Message({
           message: '停用管理员“' + nickname + '”成功',

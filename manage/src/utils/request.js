@@ -68,20 +68,10 @@ service.interceptors.response.use(
         duration: 5 * 1000
       })
     } else if (error.response && error.response.status && error.response.status === 500) {
-      // Message({
-      //   message: '对不起，服务器出现异常',
-      //   type: 'error',
-      //   duration: 5 * 1000
-      // })
-      // to re-login
-      MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
-        confirmButtonText: '确认',
-        // cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          location.reload()
-        })
+      Message({
+        message: '对不起，服务器出现异常',
+        type: 'error',
+        duration: 5 * 1000
       })
     } else if (error.response && error.response.status && error.response.status === 700) {
       // to re-login
