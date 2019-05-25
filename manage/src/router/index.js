@@ -204,7 +204,7 @@ export const asyncRoutes = [
 
       {
         path: 'admin',
-        name: 'admin',
+        name: 'Admin',
         component: () => import('@/views/admin/index'),
         meta: { title: '管理员设置', icon: 'admin', roles: ['super'] }
       },

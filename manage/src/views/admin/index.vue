@@ -88,21 +88,47 @@
     >
       批量停用
     </el-button>
+
+    <!-- Dialog Modal -->
+    <Dialog
+      v-if="showDialog"
+      :dialog-title="dialogTitle"
+      :show-dialog.sync="showDialog"
+      :admin-type="adminType"
+      :form="form"
+      @onSubmit="onSubmit"
+      @onCancel="onCancel"
+      @developing="developing"
+    />
   </div>
 </template>
 
 <script>
-import { Message } from 'element-ui'
-import { getAllAdmin, removeAdmin } from '@/api/admin'
+import { Message, MessageBox } from 'element-ui'
+import { getAllAdmin, getAdminType, addAdmin, removeAdmin } from '@/api/admin'
 import { formatDate } from '@/utils/index'
+import Dialog from './components/Dialog'
 
 export default {
-  name: 'Dashboard',
+  name: 'Admin',
+  components: { Dialog },
   data() {
     return {
       tableData: null,
+      adminType: [],
       tableLoading: true,
-      multipleSelection: []
+      multipleSelection: [],
+      showDialog: false,
+      dialogTitle: '',
+      form: {
+        username: '',
+        password: '',
+        nickname: '',
+        dingtalk_robot: '',
+        mobile: '',
+        wechat_id: ''
+      },
+      message: ''
     }
   },
   created() {
@@ -115,20 +141,63 @@ export default {
         this.tableData = response.data.data
         this.tableLoading = false
       })
+      getAdminType().then(response => {
+        this.adminType = response.data.data
+      })
     },
     timestamp2date(timestamp) {
       return formatDate(timestamp)
     },
-    handleAddNew(index, row) {
-      console.log(index, row)
-      return this.developing()
+    validateForm(form) {
+      if (!form.username) {
+        this.message = '请输入用户名！'
+        return false
+      }
+      if (!form.password) {
+        this.message = '请输入密码！'
+        return false
+      }
+      if (!form.level) {
+        this.message = '请选择管理员类型！'
+        return false
+      }
+      return true
+    },
+    onSubmit() {
+      console.log('form|', this.form)
+      if (!this.validateForm(this.form)) {
+        Message({
+          message: this.message || 'Error!',
+          type: 'error',
+          duration: 2 * 1000
+        })
+        return
+      }
+      addAdmin(this.form).then(response => {
+        if (!response) {
+          return
+        }
+        console.log('response|', response)
+        Message({
+          message: '新增管理员成功！',
+          type: 'success',
+          duration: 5 * 1000
+        })
+        this.showDialog = false
+      })
+    },
+    onCancel() {
+      this.showDialog = false
+    },
+    handleAddNew() {
+      this.showDialog = true
+      this.dialogTitle = '新增管理员'
     },
     handleEdit(index, row) {
       console.log(index, row)
       return this.developing()
     },
     handleDelete(index, row) {
-      console.log(index, row)
       const id = row.id
       removeAdmin({ id }).then(response => {
         if (!response) {
@@ -142,9 +211,36 @@ export default {
         })
       })
     },
-    handleDeleteAll(index, row) {
-      console.log(index, row)
-      return this.developing()
+    handleDeleteAll() {
+      if (!this.multipleSelection.length) {
+        return
+      }
+      MessageBox.confirm('确认停用管理员吗？', '停用管理员确认', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.multipleSelection.forEach(element => {
+          const id = element.id
+          removeAdmin({ id }).then(response => {
+            if (!response) {
+              return
+            }
+            // TODO: remove form tableData
+          })
+        })
+      }).then(() => {
+        const adminList = []
+        this.multipleSelection.forEach(element => {
+          const name = element.nickname
+          adminList.push(name)
+        })
+        Message({
+          message: '停用管理员' + adminList + '成功',
+          type: 'success',
+          duration: 5 * 1000
+        })
+      })
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
@@ -161,11 +257,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+$bg:#283443;
+$light_gray:#fff;
+$cursor: #fff;
+$margin_small: 2em;
+
+@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
+  .dialog-container .el-input input {
+    color: $cursor;
+  }
+}
 .add-admin-btn {
   float: right;
-  margin-bottom: 2em;
+  margin-bottom: $margin_small;
 }
 .delete-all-btn {
-  margin-top: 2em;
+  margin-top: $margin_small;
 }
 </style>
