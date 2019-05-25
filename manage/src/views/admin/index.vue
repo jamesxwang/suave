@@ -221,13 +221,13 @@ export default {
       this.showDialog = false
     },
     handleAddNew() {
-      this.isCreate =true
+      this.isCreate = true
       this.showDialog = true
       this.dialogTitle = '新增管理员'
     },
     handleEdit(index, row) {
-      this.isCreate =false
-      let tmp = {...row}
+      this.isCreate = false
+      const tmp = { ...row }
       tmp.level = row.type.admin_user_type_id
       this.form = tmp
       this.dialogTitle = '编辑管理员'
@@ -251,7 +251,7 @@ export default {
             duration: 5 * 1000
           })
         })
-      }).catch(e => {console.log(e)})
+      }).catch(e => { console.log(e) })
     },
     handleDeleteAll() {
       if (!this.multipleSelection.length) {
@@ -282,7 +282,7 @@ export default {
           type: 'success',
           duration: 5 * 1000
         })
-      }).catch(e => {console.log(e)})
+      }).catch(e => { console.log(e) })
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
