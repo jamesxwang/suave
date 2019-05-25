@@ -96,8 +96,9 @@
       :show-dialog.sync="showDialog"
       :admin-type="adminType"
       :form="form"
-      @onSubmit="onSubmit"
-      @onCancel="onCancel"
+      @on-submit="onSubmit"
+      @on-cancel="onCancel"
+      @reset-form="resetForm"
       @developing="developing"
     />
   </div>
@@ -105,7 +106,7 @@
 
 <script>
 import { Message, MessageBox } from 'element-ui'
-import { getAllAdmin, getAdminType, addAdmin, removeAdmin } from '@/api/admin'
+import { getAllAdmin, getAdminType, addAdmin, editAdmin, removeAdmin } from '@/api/admin'
 import { formatDate } from '@/utils/index'
 import Dialog from './components/Dialog'
 
@@ -121,13 +122,16 @@ export default {
       showDialog: false,
       dialogTitle: '',
       form: {
+        id: null,
         username: '',
         password: '',
         nickname: '',
         dingtalk_robot: '',
         mobile: '',
-        wechat_id: ''
+        wechat_id: '',
+        level: ''
       },
+      isCreate: true,
       message: ''
     }
   },
@@ -144,6 +148,18 @@ export default {
       getAdminType().then(response => {
         this.adminType = response.data.data
       })
+    },
+    resetForm() {
+      this.form = {
+        id: null,
+        username: '',
+        password: '',
+        nickname: '',
+        dingtalk_robot: '',
+        mobile: '',
+        wechat_id: '',
+        level: ''
+      }
     },
     timestamp2date(timestamp) {
       return formatDate(timestamp)
@@ -173,43 +189,69 @@ export default {
         })
         return
       }
-      addAdmin(this.form).then(response => {
-        if (!response) {
-          return
-        }
-        console.log('response|', response)
-        Message({
-          message: '新增管理员成功！',
-          type: 'success',
-          duration: 5 * 1000
+      if (this.isCreate) {
+        addAdmin(this.form).then(response => {
+          if (!response) {
+            return
+          }
+          console.log('response|', response)
+          Message({
+            message: '新增管理员成功！',
+            type: 'success',
+            duration: 5 * 1000
+          })
+          this.showDialog = false
         })
-        this.showDialog = false
-      })
+      } else {
+        editAdmin(this.form).then(response => {
+          if (!response) {
+            return
+          }
+          console.log('response|', response)
+          Message({
+            message: '编辑管理员成功！',
+            type: 'success',
+            duration: 5 * 1000
+          })
+          this.showDialog = false
+        })
+      }
     },
     onCancel() {
       this.showDialog = false
     },
     handleAddNew() {
+      this.isCreate =true
       this.showDialog = true
       this.dialogTitle = '新增管理员'
     },
     handleEdit(index, row) {
-      console.log(index, row)
-      return this.developing()
+      this.isCreate =false
+      let tmp = {...row}
+      tmp.level = row.type.admin_user_type_id
+      this.form = tmp
+      this.dialogTitle = '编辑管理员'
+      this.showDialog = true
     },
     handleDelete(index, row) {
-      const id = row.id
-      removeAdmin({ id }).then(response => {
-        if (!response) {
-          return
-        }
-        this.tableData.splice(index, 1)
-        Message({
-          message: '停用管理员“' + row.nickname + '”成功',
-          type: 'success',
-          duration: 5 * 1000
+      MessageBox.confirm('确认停用管理员"' + row.nickname + '"吗？', '停用管理员确认', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const id = row.id
+        removeAdmin({ id }).then(response => {
+          if (!response) {
+            return
+          }
+          this.tableData.splice(index, 1)
+          Message({
+            message: '停用管理员"' + row.nickname + '"成功',
+            type: 'success',
+            duration: 5 * 1000
+          })
         })
-      })
+      }).catch(e => {console.log(e)})
     },
     handleDeleteAll() {
       if (!this.multipleSelection.length) {
@@ -240,7 +282,7 @@ export default {
           type: 'success',
           duration: 5 * 1000
         })
-      })
+      }).catch(e => {console.log(e)})
     },
     handleSelectionChange(val) {
       this.multipleSelection = val

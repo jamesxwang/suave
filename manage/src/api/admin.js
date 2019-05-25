@@ -22,6 +22,14 @@ export function addAdmin(data) {
   })
 }
 
+export function editAdmin(data) {
+  return request({
+    url: 'admin/user/',
+    method: 'POST',
+    data
+  })
+}
+
 export function removeAdmin(data) {
   return request({
     url: 'admin/user/remove/',

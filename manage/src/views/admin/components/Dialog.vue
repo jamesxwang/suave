@@ -69,15 +69,15 @@ export default {
   },
   methods: {
     handleCloseDialog(done) {
-      this.$emit('onCancel')
+      this.onCancel()
       done()
     },
     onSubmit() {
-      this.$emit('developing')
-      // this.$emit('onSubmit')
+      this.$emit('on-submit')
     },
     onCancel() {
-      this.$emit('onCancel')
+      this.$emit('reset-form')
+      this.$emit('on-cancel')
     },
     updateShowDialog(isVisible) {
       if (isVisible) return false
