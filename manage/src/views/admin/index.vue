@@ -107,7 +107,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { getAllAdmin, getAdminType, addAdmin, editAdmin, removeAdmin } from '@/api/admin'
-import { formatDate } from '@/utils/index'
+import { formatDate, removeObjFromArrayBy } from '@/utils/index'
 import Dialog from './components/Dialog'
 
 export default {
@@ -268,7 +268,7 @@ export default {
             if (!response) {
               return
             }
-            // TODO: remove form tableData
+            removeObjFromArrayBy(this.tableData, { id })
           })
         })
       }).then(() => {

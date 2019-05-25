@@ -131,6 +131,27 @@ export function formatDate(date) {
   return y + '-' + formatNum(m) + '-' + formatNum(d)
 }
 
+/**
+ * @param {Array} arr
+ * @param {Object} propObj
+ */
+export function removeObjFromArrayBy(arr, propObj) {
+  const key = Object.keys(propObj)[0]
+  const value = propObj[key]
+  let matchedObj = null
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i][key] === value) {
+      matchedObj = {
+        index: i,
+        item: arr[i]
+      }
+      break
+    }
+  }
+  arr.splice(matchedObj.index, 1)
+  return arr
+}
+
 function formatNum(m) {
   m = Number(m)
   return m < 10 ? '0' + m : m
