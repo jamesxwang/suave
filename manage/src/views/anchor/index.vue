@@ -117,11 +117,11 @@ export default {
     fetchData() {
       this.listLoading = true
       getUnauditList().then(response => {
-        this.list = response.data.data
+        this.list = response.data
         this.listLoading = false
       })
       getAllLevel().then(response => {
-        this.allLevels = response.data.data
+        this.allLevels = response.data
       })
     },
     confirmAudit(pass, id) {
@@ -135,7 +135,7 @@ export default {
           type: 'warning'
         }).then(() => {
           auditReject({ id }).then(response => {
-            const res = response.data.data
+            const res = response.data
             this.list.forEach((element, index) => {
               if (element.id === res.id) {
                 this.list.splice(index, 1)
@@ -160,7 +160,7 @@ export default {
         return
       }
       auditPass(this.form).then(response => {
-        const res = response.data.data
+        const res = response.data
         this.list.forEach((element, index) => {
           if (element.id === res.id) {
             this.list.splice(index, 1)

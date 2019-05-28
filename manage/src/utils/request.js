@@ -45,33 +45,34 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    const res = response
+    const res = response.data
     // if the custom code is not 200, it is judged as an error.
-    if (res.status !== 200) {
-      Message({
-        message: res.message || 'error',
-        type: 'error',
-        duration: 5 * 1000
-      })
-
-      return Promise.reject(res.message || 'error')
-    } else if (res.data && res.data.err_code && res.data.err_code === 7) {
-      // to re-login
-      MessageBox.confirm('由于您长时间未操作，已自动为您登出后台管理系统', '请重新登录', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          location.reload()
+    if (res && res.err_msg && res.err_code !== 0) {
+      if (res.err_code === 7) {
+        // to re-login
+        MessageBox.confirm('由于您长时间未操作，已自动为您登出后台管理系统', '请重新登录', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          store.dispatch('user/resetToken').then(() => {
+            location.reload()
+          })
         })
-      })
+      } else {
+        Message({
+          message: res.err_msg || 'error',
+          type: 'error',
+          duration: 5 * 1000
+        })
+      }
+      return Promise.reject(res.err_msg || 'error')
     } else {
       return res
     }
   },
   error => {
-    if (error.response && error.response.data && error.response.data.err_code && error.response.data.err_code === 3) {
+    if (error.response && error.response.data && error.response.data.err_msg && error.response.data.err_code === 3) {
       Message({
         message: '用户名或密码错误，请重新输入',
         type: 'error',
@@ -86,7 +87,7 @@ service.interceptors.response.use(
     } else {
       console.log('ERROR: ' + error) // for debug
       Message({
-        message: error.message,
+        message: error.response.data.err_msg,
         type: 'error',
         duration: 5 * 1000
       })

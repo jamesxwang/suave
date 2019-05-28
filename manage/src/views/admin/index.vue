@@ -141,11 +141,11 @@ export default {
     fetchData() {
       this.tableLoading = true
       getAllAdmin().then(response => {
-        this.tableData = response.data.data
+        this.tableData = response.data
         this.tableLoading = false
       })
       getAdminType().then(response => {
-        this.adminType = response.data.data
+        this.adminType = response.data
       })
     },
     resetForm() {
@@ -179,7 +179,6 @@ export default {
       return true
     },
     onSubmit() {
-      console.log('form|', this.form)
       if (!this.validateForm(this.form)) {
         Message({
           message: this.message || 'Error!',
@@ -193,12 +192,13 @@ export default {
           if (!response) {
             return
           }
-          console.log('response|', response)
           Message({
             message: '新增管理员成功！',
             type: 'success',
             duration: 5 * 1000
           })
+          this.fetchData()
+          this.resetForm()
           this.showDialog = false
         })
       } else {
@@ -206,12 +206,13 @@ export default {
           if (!response) {
             return
           }
-          console.log('response|', response)
           Message({
             message: '编辑管理员成功！',
             type: 'success',
             duration: 5 * 1000
           })
+          this.fetchData()
+          this.resetForm()
           this.showDialog = false
         })
       }

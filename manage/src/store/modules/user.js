@@ -31,8 +31,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ user_name: username.trim(), password: password }).then(response => {
         const res = response.data
-        commit('SET_TOKEN', res.data.token)
-        setToken(res.data.token)
+        commit('SET_TOKEN', res.token)
+        setToken(res.token)
         resolve()
       }).catch(error => {
         reject(error)
@@ -49,9 +49,8 @@ const actions = {
         if (!data) {
           reject('Verification failed, please Login again.')
         }
-
-        const { nickname, avatar } = data.data
-        const roles = [data.data.type.tag]
+        const { nickname, avatar } = data
+        const roles = [data.type.tag]
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
