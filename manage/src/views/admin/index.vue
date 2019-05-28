@@ -99,7 +99,6 @@
       @on-submit="onSubmit"
       @on-cancel="onCancel"
       @reset-form="resetForm"
-      @developing="developing"
     />
   </div>
 </template>

@@ -46,7 +46,6 @@ service.interceptors.response.use(
    */
   response => {
     const res = response
-
     // if the custom code is not 200, it is judged as an error.
     if (res.status !== 200) {
       Message({
@@ -56,12 +55,23 @@ service.interceptors.response.use(
       })
 
       return Promise.reject(res.message || 'error')
+    } else if (res.data && res.data.err_code && res.data.err_code === 7) {
+      // to re-login
+      MessageBox.confirm('由于您长时间未操作，已自动为您登出后台管理系统', '请重新登录', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
+        })
+      })
     } else {
       return res
     }
   },
   error => {
-    if (error.response && error.response.status && error.response.status === 400) {
+    if (error.response && error.response.data && error.response.data.err_code && error.response.data.err_code === 3) {
       Message({
         message: '用户名或密码错误，请重新输入',
         type: 'error',
@@ -72,17 +82,6 @@ service.interceptors.response.use(
         message: '对不起，服务器出现异常',
         type: 'error',
         duration: 5 * 1000
-      })
-    } else if (error.response && error.response.status && error.response.status === 700) {
-      // to re-login
-      MessageBox.confirm('身份验证已过期， 请重新登录', '登出确认', {
-        confirmButtonText: '重新登录',
-        cancelButtonText: '取消登录',
-        type: 'warning'
-      }).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          location.reload()
-        })
       })
     } else {
       console.log('ERROR: ' + error) // for debug
