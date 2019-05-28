@@ -24,7 +24,7 @@ export function addAdmin(data) {
 
 export function editAdmin(data) {
   return request({
-    url: 'admin/user/',
+    url: 'admin/user/update/',
     method: 'POST',
     data
   })
