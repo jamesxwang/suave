@@ -5,7 +5,7 @@ module.exports = {
   },
   // chainWebpack: config => {},
   productionSourceMap: false,
-  publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? 'http://47.74.66.156/' : '/',
   devServer: { 
     disableHostCheck: true,
     host: '0.0.0.0',

@@ -9,6 +9,11 @@ cd $WORKSPACE/manage
 sudo npm install
 sudo npm run build:prod
 
+sudo echo "QkdDDFQDOa9wpNrN" > MP_verify_QkdDDFQDOa9wpNrN.txt
+
+sudo cp MP_verify_QkdDDFQDOa9wpNrN.txt $WORKSPACE/frontend/dist
+sudo cp MP_verify_QkdDDFQDOa9wpNrN.txt $WORKSPACE/manage/dist
+
 cd $WORKSPACE
 sudo docker build -t suave_frontend:$BUILD_NUMBER .
 if sudo docker ps -a | grep suave_frontend; then
