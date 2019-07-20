@@ -279,6 +279,23 @@ export default {
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
                 window.scrollTo(0, Math.max(scrollHeight - 1, 0));
             },100)
+        },
+        overscroll(el) {
+            el.addEventListener('touchstart', function() {
+                let top = el.scrollTop
+                ,totalScroll = el.scrollHeight
+                ,currentScroll = top + el.offsetHeight;
+                if(top === 0) {
+                    el.scrollTop = 1;
+                }else if(currentScroll === totalScroll) {
+                    el.scrollTop = top - 1;
+                }
+            });
+
+            el.addEventListener('touchmove', function(evt) {
+            if(el.offsetHeight < el.scrollHeight)
+                evt._isScroller = true;
+            });
         }
     },
     created () {
@@ -298,6 +315,14 @@ export default {
                 elems[i].addEventListener('blur', this.fixScroll); 
             }
         }
+        // 整个body禁止滚动
+        document.body.addEventListener('touchmove', function(evt) {
+            if(!evt._isScroller) {
+                evt.preventDefault();
+            }
+        },{passive: false});
+        // 可以滚动的元素
+        this.overscroll(document.getElementsByClassName('modal-con')[0])
 	}
 }
 </script>

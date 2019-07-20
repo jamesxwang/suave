@@ -295,6 +295,7 @@ export default {
         },{passive: false});
         // 可以滚动的元素
         this.overscroll(document.getElementsByClassName('page-app')[0])
+        this.overscroll(document.getElementsByClassName('modal-con')[0])
     },
 	destroyed () {
 		
