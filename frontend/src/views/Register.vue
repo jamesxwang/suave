@@ -447,7 +447,18 @@ export default {
             }, error => {
                 console.log(error)
             })
-        }
+        },
+        getBannerImages () {
+            this.$http({
+                method: 'GET', 
+                url: 'api/v1/info/platform/?tag=register-banner',
+                showLoading: true
+            }).then(res => {
+                this.sliders = res.data
+            }, error => {
+                console.log(error)
+            })
+        },
     },
     created () {
         this.setTitle('注册店员')
@@ -455,6 +466,7 @@ export default {
 	mounted(){
         this.getAllGender()
         this.getAllTags()
+        this.getBannerImages()
         let u = navigator.userAgent
         let isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
         if(isIOS){
