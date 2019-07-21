@@ -5,7 +5,7 @@
                 <mt-swipe-item v-for="(item,i) in sliders" :key="i"><img :src="item"></mt-swipe-item>
             </mt-swipe>
         </div>
-        <h2>注册陪聊</h2>
+        <h2>注册店员</h2>
         <form class="form-blk" @submit="submitAction">
             <div class="form-line">
                 <label class="label">昵 &nbsp; &nbsp; &nbsp; 称：</label>
