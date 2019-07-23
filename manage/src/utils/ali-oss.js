@@ -1,7 +1,7 @@
 const OSS = require('ali-oss')
 
-const accessKeyId = 'LTAIcJ2c4DfxlC90'
-const accessKeySecret = 'e4AnZMeLZlKvuKuJOSs2Rrk2JzofFw'
+const accessKeyId = 'LTAI4Sy6Wy799QF9'
+const accessKeySecret = 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk'
 const region = 'oss-ap-southeast-2'
 
 // image
