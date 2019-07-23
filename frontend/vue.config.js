@@ -12,7 +12,7 @@ module.exports = {
     port: 8080,
     proxy: {
       '/api': {
-        target: 'http://www.suavechat.com:8081',
+        target: 'http://47.74.66.156:8081',
         ws: true,
         changeOrigin: true
       }
