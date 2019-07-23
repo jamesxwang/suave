@@ -326,18 +326,6 @@ export default {
                 this.audioPreview = true
             })
         },
-        getTime () {
-            setTimeout(() => {
-                let duration = document.getElementById('audioPreview').duration
-                if(isNaN(duration)){
-                    this.getTime()
-                }
-                else{
-                    console.info("该音频的总时间为：" + duration + "秒")
-                    return duration
-                }  
-            }, 10);
-        },
         fixScroll () {
             setTimeout(()=>{
                 let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0
