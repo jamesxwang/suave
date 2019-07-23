@@ -219,7 +219,8 @@ export default {
                 this.data = result.data
                 this.banner.push(getImageURL(this.data.avatar))
                 for (let i = 0; i < this.data.image.length; ++i) {
-                    this.banner.push(getImageURL(this.data.image[i]))
+                    if (this.data.image[i])
+                        this.banner.push(getImageURL(this.data.image[i]))
                 }
             }, error => {
                 this.$router.push('/')

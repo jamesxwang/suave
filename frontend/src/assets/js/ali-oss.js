@@ -24,7 +24,6 @@ export function getImageURL(name) {
 }
 
 export function getAudioURL(name) {
-  console.log(name)
   const client = new OSS({
     endpoint: audioEndPoint,
     bucket: audioBucket,

@@ -12,9 +12,11 @@
         <template slot-scope="props">
           <el-form label-position="left" inline class="table-expand">
             <el-carousel indicator-position="outside" type="card" height="700px">
-              <el-carousel-item v-for="img in props.row.image" :key="img">
-                <img :src="getImage(img)">
-              </el-carousel-item>
+              <span v-for="img in props.row.image" :key="img">
+                <el-carousel-item v-if="img">
+                  <img :src="getImage(img)">
+                </el-carousel-item>
+              </span>
             </el-carousel>
             <el-form-item label="语音">
               <audio controls>
