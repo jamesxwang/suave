@@ -92,7 +92,7 @@
                 <div class="flex-1">
                     <label class="upload-img">
                     	<input type="file" @change="uploadImg($event,'avatar',0)">
-                    	<img v-if="regData.avatar.length>0" :src="regData.avatar">
+                    	<img v-if="regData.avatar.length>0" :src="getImage(regData.avatar)">
                     	<div class="inner" v-else>
                     		<i class="iconfont icon-plus"></i>
 							<p>上传头像</p>
@@ -105,7 +105,7 @@
                 <div class="flex-1 flex">
                     <label class="upload-img" v-for="(item,i) in regData.image" :key="i">
                     	<input type="file" @change="uploadImg($event,'img',i)">
-                    	<img v-if="item.length>0" :src="item">
+                    	<img v-if="item.length>0" :src="getImage(item)">
                     	<div class="inner" v-else>
                     		<i class="iconfont icon-plus"></i>
 							<p>上传照片</p>
@@ -127,7 +127,7 @@
             <div class="form-line" v-show="audioPreview">
                 <label class="label">语音预览：</label>
                 <div class="flex-1">
-                    <audio id="audioPreview" :src="regData.audio" v-show="false"></audio>
+                    <audio id="audioPreview" :src="getAudio(regData.audio)" v-show="false"></audio>
                     <button id="playAudioBtn" class="btn small round" @click.stop.prevent="playAudio()">
                         <i class="iconfont icon-horn"></i>
                     </button>
@@ -155,6 +155,7 @@
 
 <script>
 import { Promise, reject, resolve } from 'q';
+import { getImageURL, getAudioURL, putAudio, putImage } from '@/assets/js/ali-oss'
 let OSS = require('ali-oss')
 let wx = require('weixin-js-sdk')
 let codeTimer = null
@@ -182,20 +183,21 @@ export default {
                 skill: '',
                 online: ''
             },
-            postData: {},
             allGender: [],
             allTags: [],
             audioPreview: false,
-            audioType: '',
-            avatarFile: null,
-            audioFile: null,
-            imageFiles: []
     	}
     },
     methods: {
     	showDatePicker () {
     		this.$refs.datePicker.open()
-    	},
+        },
+        getAudio(name) {
+            return getAudioURL(name)
+        },
+        getImage(name) {
+            return getImageURL(name)
+        },
     	handleConfirmDate (val) {
     		this.regData.birthday = this.siteUtils.formatDate(val)
         },
@@ -261,98 +263,28 @@ export default {
             }
             return true
         },
-        async submitAction (e) {
+        submitAction (e) {
             e.preventDefault();
             if(!this.validateForm()) {
                 return
             }
-            try {
-                let avatarUrl = await this.putImgOSS(this.avatarFile)
-                let imgsUrlList = []
-                for (let i = 0; i < this.imageFiles.length; ++i) {
-                    if (this.imageFiles[i]) {
-                        let imgUrl = await this.putImgOSS(this.imageFiles[i])
-                        imgsUrlList.push(imgUrl)
-                    }
-                }
-                let audioUrl = await this.putAudioOSS(this.audioFile)
-                this.postData = this.siteUtils.cloneObj(this.regData)
-                this.postData.avatar = avatarUrl
-                this.postData.image = imgsUrlList
-                this.postData.audio = audioUrl
-                console.log('申请陪聊：',this.postData)
-                // http post: api/v1/anchor/apply/ 
-                this.$http({
-                    method: 'POST', 
-                    url: 'api/v1/anchor/apply/', 
-                    data: this.postData,
-                    showLoading: true
-                }).then(res => {
-                    this.$toast('您的申请已提交，请等待客服联系审核，即将返回微信...')
-                    setTimeout(() => {
-                        window.opener = null
-                        window.close()
-                        wx.closeWindow();
-                    }, 3 * 1000);
-                }, error => {
-                    this.$toast('程序异常，请联系管理员:' + error.message)
-                    console.log(error)
-                })
-            } catch (e) {
-                this.$toast('程序异常，请联系管理员:' + e)
-                console.log(e)
-            }
-        },
-        async putAudioOSS (audioFile) {
-            return new Promise((resolve, reject) => {
-                let dotPos = audioFile.name.lastIndexOf(".")
-                let fileNameLen = audioFile.name.length
-                let fileType = audioFile.name.substring(dotPos, fileNameLen).toLowerCase()
-                // 配置
-                const client = new OSS({
-                    endpoint: 'audio.suavechat.com',
-                    region: 'oss-ap-southeast-2',
-                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                    accessKeyId: 'LTAI4Sy6Wy799QF9',
-                    accessKeySecret: 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk',
-                    bucket: 'suave-audio',
-                    cname: true
-                });
-                // 文件名
-                const objectKey = `${new Date().getTime()}.${fileType.split('.').pop()}`;
-                // 上传
-                client.put(objectKey, audioFile).then((result) => {
-                    console.log('上传音频成功',result)
-                    resolve(objectKey)
-                }).catch((err) => {
-                    reject()
-                })
-            })
-        },
-        async putImgOSS (imgFile) {
-            return new Promise((resolve, reject) => {
-                let dotPos = imgFile.name.lastIndexOf(".")
-                let fileNameLen = imgFile.name.length
-                let fileType = imgFile.name.substring(dotPos, fileNameLen).toLowerCase() // .png
-                // 配置
-                const client = new OSS({
-                    endpoint: 'image.suavechat.com',
-                    region: 'oss-ap-southeast-2',
-                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                    accessKeyId: 'LTAI4Sy6Wy799QF9',
-                    accessKeySecret: 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk',
-                    bucket: 'suave-image',
-                    cname: true
-                });
-                // 文件名
-                const objectKey = `${new Date().getTime()}.${fileType.split('.').pop()}`; // 15686556541.png
-                // 上传
-                client.put(objectKey, imgFile).then((result) => {
-                    console.log('上传图片成功',result)
-                    resolve(objectKey)
-                }).catch((err) => {
-                    reject()
-                })
+            console.log('注册店员：',this.regData)
+            // http post: api/v1/anchor/apply/ 
+            this.$http({
+                method: 'POST', 
+                url: 'api/v1/anchor/apply/', 
+                data: this.regData,
+                showLoading: true
+            }).then(res => {
+                this.$toast('您的申请已提交，请等待客服联系审核，即将返回微信...')
+                setTimeout(() => {
+                    window.opener = null
+                    window.close()
+                    wx.closeWindow();
+                }, 3 * 1000);
+            }, error => {
+                this.$toast('程序异常，请联系管理员:' + error.message)
+                console.log(error)
             })
         },
     	uploadImg (eve,type,index) {
@@ -364,27 +296,16 @@ export default {
             	this.$toast('请上传图片格式')
             	return
             }
-            this.siteUtils.imageFileCompress(eve.target.files[0]).then(res=>{
-            	if(type=='avatar'){
-            		this.regData.avatar = res
-                    this.avatarFile = eve.target.files[0]
-            	}else{
-                    this.$set(this.regData.image,index,res)
-                    this.$set(this.imageFiles,index,eve.target.files[0])
+            let imgFile = eve.target.files[0]
+            console.log(imgFile)
+            putImage(imgFile, fileType).then(res => {
+                console.log(res)
+                if (type=='avatar') {
+                    this.regData.avatar = res
+                } else {
+                    this.$set(this.regData.image, index, res)
                 }
             })
-            
-        },
-        getObjectURL (file) {  
-            let url = null;  
-            if (window.createObjectURL != undefined) { // basic  
-                url = window.createObjectURL(file);  
-            } else if (window.URL != undefined) { // mozilla(firefox)  
-                url = window.URL.createObjectURL(file);  
-            } else if (window.webkitURL != undefined) { // webkit or chrome  
-                url = window.webkitURL.createObjectURL(file);  
-            }
-            return url;  
         },
         playAudio () {
             document.getElementById('audioPreview').play()
@@ -399,33 +320,28 @@ export default {
             	this.$toast('请上传音频格式')
             	return
             }
-            this.audioFile = e.target.files[0]
-            let objUrl = this.getObjectURL(this.audioFile)
-            this.regData.audio = objUrl
-            this.audioType = fileType
-            let audioTime = this.getTime()
-            if (audioTime > 20) {
-                this.$toast('请上传20秒以内的音频')
-                return
-            }
-            this.audioPreview = true
+            let audioFile = e.target.files[0]
+            putAudio(audioFile, fileType).then(res => {
+                this.regData.audio = res
+                this.audioPreview = true
+            })
         },
         getTime () {
             setTimeout(() => {
-                let duration = document.getElementById('audioPreview').duration;  
-                if(isNaN(duration)){  
+                let duration = document.getElementById('audioPreview').duration
+                if(isNaN(duration)){
                     this.getTime()
-                }  
+                }
                 else{
-                    console.info("该音频的总时间为："+duration+"秒")  
+                    console.info("该音频的总时间为：" + duration + "秒")
                     return duration
                 }  
             }, 10);
         },
         fixScroll () {
             setTimeout(()=>{
-                let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0;
-                window.scrollTo(0, Math.max(scrollHeight - 1, 0));
+                let scrollHeight = document.documentElement.scrollTop || document.body.scrollTop || 0
+                window.scrollTo(0, Math.max(scrollHeight - 1, 0))
             },100)
         },
         getAllGender () {
@@ -458,7 +374,7 @@ export default {
             }, error => {
                 console.log(error)
             })
-        },
+        }
     },
     created () {
         this.setTitle('注册店员')

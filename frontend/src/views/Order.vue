@@ -149,6 +149,7 @@
 
 <script>
 import Modal from '@/components/Modal.vue'
+import { getImageURL } from '@/assets/js/ali-oss'
 export default {
 	name: 'Order',
     components: {
@@ -254,9 +255,7 @@ export default {
                     if (!this.dataList[i].avatar) {
                         this.dataList[i].avatar = 'images/suave_logo.jpeg'
                     } else {
-                        this.siteUtils.getImgOSS(this.dataList[i].avatar).then(res => {
-                            this.dataList[i].avatar = res
-                        })
+                        this.dataList[i].avatar = getImageURL(this.dataList[i].avatar)
                     }
                 }
             }, error => {

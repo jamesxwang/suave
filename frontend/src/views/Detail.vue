@@ -13,7 +13,7 @@
                 <i class="iconfont icon-girl" v-else></i>
                 <span class="props">{{data.age}}岁 {{data.constellation}}</span>
                 <i class="iconfont icon-horn"  @click="playAudio()" ></i>
-                <audio id="audioPreview" :src="audioURL" v-show="false"></audio>
+                <audio id="audioPreview" :src="audio" v-show="false"></audio>
             </p>
             <p class="slogan">{{data.slogan}}</p>
             <p class="tags">
@@ -127,6 +127,7 @@
 
 <script>
 import Modal from '@/components/Modal.vue'
+import { getImageURL, getAudioURL } from '@/assets/js/ali-oss'
 import { Promise, reject, resolve } from 'q';
 export default {
 	name: 'Detail',
@@ -154,7 +155,7 @@ export default {
             banner: [],
             currentId: '',
             allProductType: [],
-            audioURL: '',
+            audio: '',
             timeList: [],
             instructions: [],
             unitPrice: 0,
@@ -216,13 +217,9 @@ export default {
                 showLoading: true
             }).then(result => {
                 this.data = result.data
-                this.siteUtils.getImgOSS(this.data.avatar).then(res => {
-                    this.banner.push(res)
-                })
+                this.banner.push(getImageURL(this.data.avatar))
                 for (let i = 0; i < this.data.image.length; ++i) {
-                    this.siteUtils.getImgOSS(this.data.image[i]).then(res => {
-                        this.banner.push(res)
-                    })
+                    this.banner.push(getImageURL(this.data.image[i]))
                 }
             }, error => {
                 this.$router.push('/')
@@ -325,8 +322,8 @@ export default {
 	mounted(){
         if (!this.currentId)
             this.currentId = this.$route.query.id;
-        if (!this.audioURL)
-            this.audioURL = this.$route.query.audioURL
+        if (!this.audio)
+            this.audio = getAudioURL(this.$route.query.audio)
         this.getDetail(this.currentId)
         this.getProductType(this.currentId)
         this.getCurrency()

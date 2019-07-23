@@ -163,50 +163,7 @@ export default{
 	},
 	imageFileCompress(imageFile, maxWidth, maxHeight, quality, force){
 		return this.imageFile2DataURL(imageFile, maxWidth, maxHeight, quality, force).then( dataURL => {
-			// console.log(dataURL)
-			// const newFile = dataURLtoFile(dataURL)
-			// newFile.src = dataURL
 			return dataURL
-		})
-	},
-	toBlob(urlData, fileType) {
-        let bytes = window.atob(urlData);
-        let n = bytes.length;
-        let u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bytes.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: fileType });
-	},
-	cloneObj(obj) {
-		const clone = {...obj}
-		return clone
-	},
-	getImageURL (uint8Array) {
-		return new Promise((resolve, reject)=>{
-			const reader = new FileReader()
-			reader.onerror=reject
-			let buffer = uint8Array.buffer
-			let blob = new Blob([buffer])
-			reader.onload= (event) => {
-				let dataURL = event.target.result
-				resolve(dataURL)
-			}
-			reader.readAsDataURL(blob)
-		})
-	},
-	getAudioURL (uint8Array) {
-		return new Promise((resolve, reject)=>{
-			const reader = new FileReader()
-			reader.onerror=reject
-			let buffer = uint8Array.buffer
-			let blob = new Blob([buffer])
-			reader.onload= (event) => {
-				let dataURL = event.target.result.split(',').pop()
-				// let dataURL = event.target.result.split(',').pop()
-				resolve(dataURL)
-			}
-			reader.readAsDataURL(blob)
 		})
 	},
 	convertParams2Str(params) {
@@ -224,25 +181,5 @@ export default{
 			}
 			resolve(paramStr)
 		})
-	},
-	getImgOSS (imgKey) {
-		return new Promise((resolve, reject) => {
-			// 配置
-			const client = new OSS({
-				endpoint: 'image.suavechat.com',
-				region: 'oss-ap-southeast-2',
-				//云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-				accessKeyId: 'LTAI4Sy6Wy799QF9',
-				accessKeySecret: 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk',
-				bucket: 'suave-image',
-				cname: true
-			});
-			client.get(imgKey).then((result) => {
-				let blobURL = this.getImageURL(result.content)                    
-				resolve(blobURL)
-			}).catch((err) => {
-				reject(err)
-			});
-		})
-	},
+	}
 }

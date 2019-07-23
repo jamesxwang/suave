@@ -41,11 +41,11 @@
         </div>
         <ul class="suave-list">
             <li v-for="(item,i) in dataList" :key="i">
-                <router-link :to="'/detail?id='+item.id+'&audioURL='+item.audio">
+                <router-link :to="'/detail?id='+item.id+'&audio='+item.audio">
                     <div class="img">
-                        <img :src="item.avatar" :alt="item.name">
+                        <img :src="getAvatar(item.avatar)" :alt="item.name">
                         <i class="iconfont icon-horn" @click.stop.prevent="playAudio(item.id)"></i>
-                        <audio :id="'audio_'+item.id" :src="item.audio" v-show="false"></audio>
+                        <audio :id="'audio_'+item.id" :src="getAudio(item.audio)" v-show="false"></audio>
                         <p class="level" v-if="true"><span>{{item.level}}</span></p>
                         <p class="level off" v-else><span>离线</span></p>
                     </div>
@@ -71,6 +71,8 @@
 <script>
 import { type } from 'os';
 let OSS = require('ali-oss')
+import { getImageURL, getAudioURL } from '@/assets/js/ali-oss'
+
 export default {
 	name: 'Index',
     components: {},
@@ -78,26 +80,12 @@ export default {
     	return {
             activeSort:0,
             dataList: [],
-    		// dataList:[{
-            //     id: 1,
-            //     avatar: "images/temp-poster.png",
-            //     level: "A",
-            //     status: 1,
-            //     nickname: "白冰",
-            //     gender: 1,
-            //     constellation: "处女座",
-            //     age: 28,
-            //     price: 10.0,
-            //     slogan: "不如就陷在这里吧，天亮再回去个回去湖区回去"
-            // }],
-            currentAudioType: null,
             params: {
                 i: 0,
                 level: null,
                 gender: null,
                 city: null
             },
-            tmp: [],
             noMore: false
     	}
     },
@@ -116,47 +104,6 @@ export default {
         },
     },
     methods: {
-        getImgOSS (imgKey) {
-            return new Promise((resolve, reject) => {
-                // 配置
-                const client = new OSS({
-                    endpoint: 'image.suavechat.com',
-                    region: 'oss-ap-southeast-2',
-                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                    accessKeyId: 'LTAI4Sy6Wy799QF9',
-                    accessKeySecret: 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk',
-                    bucket: 'suave-image',
-                    cname: true
-                });
-                client.get(imgKey).then((result) => {
-                    let blobURL = this.siteUtils.getImageURL(result.content)                    
-                    resolve(blobURL)
-                }).catch((err) => {
-                    reject()
-                });
-            })
-        },
-        getAudioOSS (audioKey) {
-            return new Promise((resolve, reject) => {
-                // 配置
-                const client = new OSS({
-                    endpoint: 'audio.suavechat.com',
-                    region: 'oss-ap-southeast-2',
-                    //云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，部署在服务端使用RAM子账号或STS，部署在客户端使用STS。
-                    accessKeyId: 'LTAI4Sy6Wy799QF9',
-                    accessKeySecret: 'xrRNCNExgeLLvBhlXsbiBDugwdb3jk',
-                    bucket: 'suave-audio',
-                    cname: true
-                });
-                client.get(audioKey).then((result) => {
-                    let blobURL = this.siteUtils.getAudioURL(result.content)
-                    this.currentAudioType = result.res.requestUrls[0].split('.').pop()
-                    resolve(blobURL)
-                }).catch((err) => {
-                    reject()
-                });
-            })
-        },
         playAudio (id) {
             const $audio = document.getElementById('audio_' + id)
             $audio.play();
@@ -170,31 +117,18 @@ export default {
                 }).then(result => {
                     if (!result.data.length)
                         this.noMore = true
-                    this.tmp = []
-                    for (let i = 0; i < result.data.length; ++i) {
-                        this.getImgOSS(result.data[i].avatar).then(res => {
-                            result.data[i].avatar = res
-                        })
-                        this.getAudioOSS(result.data[i].audio).then(res => {
-                            if (this.currentAudioType === 'm4a') {
-                                this.currentAudioType = 'audio/x-m4a'
-                            } else {
-                                this.currentAudioType = 'audio/mpeg'
-                            }
-                            let blob = this.siteUtils.toBlob(res, this.currentAudioType)
-                            let url = URL.createObjectURL(blob)
-                            const $audio = document.getElementById('audio_' + result.data[i].id)
-                            $audio.src = url
-                            result.data[i].audio = url
-                        })
-                        this.tmp = result.data
-                    }
-                }).then(() => {
-                    this.tmp.forEach(obj => {
+                    const tmp = result.data
+                    tmp.forEach(obj => {
                         this.dataList.push(obj)
                     })
                 })
             })
+        },
+        getAvatar (name) {
+            return getImageURL(name)
+        },
+        getAudio (name) {
+            return getAudioURL(name)
         },
     	search (e) {
             e.preventDefault()
@@ -234,8 +168,6 @@ export default {
             this.params.i++
             this.getAnchorList(this.params)
         }
-
-
     },
     created () {
     	this.setTitle('Suave')
